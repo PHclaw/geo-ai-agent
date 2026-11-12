@@ -26,6 +26,10 @@
 <a href="#数据源与口径">数据口径</a> ·
 <a href="#合作联系">合作联系</a>
 
+<br />
+
+<strong>简体中文</strong> · <a href="README.en.md">English</a>
+
 </div>
 
 > 徽章为静态标识，不代表 CI 状态；`tests 25 passing` 指本地 `npm test` 结果。本项目是**本地可运行的单机演示版**，不是已上线的 SaaS。
