@@ -1,0 +1,21 @@
+# 依赖与构建产物
+node_modules/
+dist/
+*.log
+
+# 本地配置与密钥（保留 .env.example）
+.env
+.env.local
+
+# 运行时数据：演示库、上传样本、临时品牌备份、导出图
+server/data/*.db
+server/data/*.db-*
+server/data/uploads/
+server/data/tmp-kb/
+server/data/backups/
+server/data/agent-ws/
+server/data/figures/
+
+# 浏览器验收截图与临时文件
+.tmp-*.png
+*.tmp
