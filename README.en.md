@@ -16,7 +16,7 @@
 <img src="https://img.shields.io/badge/Express-4-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
 <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite" />
 <img src="https://img.shields.io/badge/tests-25%20passing%20(local)-brightgreen?style=flat-square" alt="tests" />
-<img src="https://img.shields.io/badge/license-not%20specified-lightgrey?style=flat-square" alt="license" />
+<img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="license" />
 
 <br /><br />
 
@@ -310,6 +310,7 @@ See sections **19.2 / 19.3** of `docs/GEO-AI-Agent-PRD.md` for the full table an
 | 19.9 / 19.10 | semi-automated data channels, static page migration |
 | 19.11 / 19.12 | content quality work, publishing schedule |
 | `deliverables/e2e-agentflow/REPORT.md` | latest end-to-end results and screenshots |
+| `LICENSE` · `NOTICE` · `THIRD_PARTY_NOTICES.md` | Apache-2.0 license text, attribution notice and dependency licenses |
 
 ### Images and regeneration
 
@@ -346,7 +347,11 @@ You can also leave a message in [Issues](https://github.com/PHclaw/geo-ai-agent/
 
 ## License
 
-This is an internal R&D / demonstration project and **no open-source license has been declared yet**. If you need to reuse it under a specific license (MIT / Apache-2.0 or others), please contact the address above first.
+Released under the **Apache License 2.0**. The full text is in [`LICENSE`](LICENSE), attribution notices in [`NOTICE`](NOTICE), and dependency licenses in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+
+Commercial use, modification, redistribution and closed-source integration (including SaaS) are all permitted; the only requirement is keeping the copyright and license notices. Apache-2.0 also grants explicit patent rights with a patent-termination clause.
+
+For commercial cooperation, custom delivery or white-label needs, get in touch via the address above.
 
 ---
 

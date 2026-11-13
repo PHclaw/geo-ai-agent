@@ -16,7 +16,7 @@
 <img src="https://img.shields.io/badge/Express-4-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
 <img src="https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white" alt="SQLite" />
 <img src="https://img.shields.io/badge/tests-25%20passing%20(local)-brightgreen?style=flat-square" alt="tests" />
-<img src="https://img.shields.io/badge/license-not%20specified-lightgrey?style=flat-square" alt="license" />
+<img src="https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square" alt="license" />
 
 <br /><br />
 
@@ -309,6 +309,7 @@ API 分组与 30 张表清单见 `docs/GEO-AI-Agent-PRD.md` 的 **19.2 / 19.3**�
 | 19.9 / 19.10 | 半自动数据通道、静态页面改造 |
 | 19.11 / 19.12 | 内容生成质量优化、发布排期 |
 | `deliverables/e2e-agentflow/REPORT.md` | 最近一次全链路测试结果与页面截图 |
+| `LICENSE` · `NOTICE` · `THIRD_PARTY_NOTICES.md` | Apache-2.0 许可证全文、归属声明与第三方依赖许可 |
 
 ### 图片清单与重新生成
 
@@ -345,7 +346,11 @@ API 分组与 30 张表清单见 `docs/GEO-AI-Agent-PRD.md` 的 **19.2 / 19.3**�
 
 ## 许可证
 
-本项目目前为内部研发 / 演示工程，**尚未声明开源协议**。如需以特定协议（MIT / Apache-2.0 等）公开、二次使用或商业合作，请先通过上方邮箱联系确认。
+本项目采用 **Apache License 2.0** 开源。许可证全文见 [`LICENSE`](LICENSE)，归属声明见 [`NOTICE`](NOTICE)，第三方依赖许可见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。
+
+允许商用、修改、再分发与闭源集成（含 SaaS），唯一要求是保留版权与许可声明；Apache-2.0 同时提供明确的专利授权与专利诉讼终止条款。
+
+商业合作、定制交付或白标需求，请通过上方邮箱联系。
 
 ---
 
