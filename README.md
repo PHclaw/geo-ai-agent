@@ -328,9 +328,9 @@ API 分组与 30 张表清单见 `docs/GEO-AI-Agent-PRD.md` 的 **19.2 / 19.3**�
 
 ## 贡献
 
-当前仓库以 README 与图示资源为主，源代码将逐步上传；上传完成后会补充 `CONTRIBUTING.md` 与 CI 流程。
+仓库已包含完整后端、前端与文档；仍待补充的是 CI 流程与 `CONTRIBUTING.md`。
 
-在此之前，欢迎通过 [Issues](https://github.com/PHclaw/geo-ai-agent/issues) 反馈问题或提出需求。本地改动请至少跑通 `npm test`、`npx tsc --noEmit`、`npm run build`，并且**不要提交 `.env`、`geo.db` 或任何密钥**。
+欢迎通过 [Issues](https://github.com/PHclaw/geo-ai-agent/issues) 反馈问题或提出需求。本地改动请至少跑通 `npm test`、`npx tsc --noEmit`、`npm run build`，并且**不要提交 `.env`、`geo.db` 或任何密钥**。
 
 ---
 

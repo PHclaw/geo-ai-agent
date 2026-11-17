@@ -329,9 +329,9 @@ A copy of each HTML source lives in `prototype/react/public/`. If the module str
 
 ## Contributing
 
-This repository currently focuses on the README and visual assets; source code will be published incrementally, after which `CONTRIBUTING.md` and CI will be added.
+The repository now contains the full backend, frontend and documentation. What is still missing is a CI pipeline and a `CONTRIBUTING.md`.
 
-Until then, feedback and feature requests are welcome through [Issues](https://github.com/PHclaw/geo-ai-agent/issues). For local changes, please make sure `npm test`, `npx tsc --noEmit` and `npm run build` pass, and **never commit `.env`, `geo.db` or any secret**.
+Feedback and feature requests are welcome through [Issues](https://github.com/PHclaw/geo-ai-agent/issues). For local changes, please make sure `npm test`, `npx tsc --noEmit` and `npm run build` pass, and **never commit `.env`, `geo.db` or any secret**.
 
 ---
 
