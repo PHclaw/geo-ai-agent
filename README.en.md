@@ -85,6 +85,7 @@ This system combines probing, a knowledge base, structured content, a source led
 
 ## Key Features
 
+- 🤖 **Agent workbench**: one sentence to profile, produce, schedule, plan placements or analyze — it only routes intent to existing endpoints and returns result cards with links to the matching page
 - 🔍 **Dual-track AI visibility diagnosis**: six platform adapters with timeout, retry and error classification; `aviModel` and `aviCend` are computed separately with four-quadrant attribution, so model-side results never impersonate real consumer visibility
 - 🧠 **Knowledge assets**: PDF / DOCX / MD / image upload with text extraction and chunking, BM25 retrieval for Chinese; fact cards include conflict detection and a single source of truth (keep one, archive the rest)
 - ✍️ **Citable content production**: template rendering writes different analysis sections per question intent; the `pi` CLI agent streams long-form articles over SSE; every draft goes through fact verification, compliance blocking, SVG data figures and a six-dimension GEOS score
@@ -179,7 +180,7 @@ GEO Aiagent/
 ├── docs/
 │   └── GEO-AI-Agent-PRD.md   Product and implementation spec (19 chapters)
 ├── server/                   Express + node:sqlite
-│   ├── index.js              ~87 API routes and entry point
+│   ├── index.js              89 API routes and entry point
 │   ├── db.js                 30 tables, migrations and seed data
 │   ├── geo.js / probe.js / providers.js      AVI calculation / probing / credential modes
 │   ├── seo.js / links.js / seo-import.js    SEO, link ledger, CSV parsing
@@ -187,7 +188,7 @@ GEO Aiagent/
 │   ├── agent/                piagent SSE, fact check, compliance, figures, site audit
 │   ├── scripts/              smoke scripts and e2e-agentflow.mjs
 │   └── *.test.js             node:test (6 files / 25 cases)
-├── prototype/react/          React 19 + Vite 7 + Tailwind 4 (21 pages)
+├── prototype/react/          React 19 + Vite 7 + Tailwind 4 (22 pages)
 └── deliverables/             banner, diagrams, screenshots, samples, E2E report
 ```
 
@@ -199,8 +200,8 @@ Three rules govern the publishing schedule: **plans only, no automated posting**
 
 | Layer | Technology | Notes |
 | --- | --- | --- |
-| Frontend | React 19 · React Router 7 · Vite 7 · Tailwind 4 · TypeScript 5 | 21 pages, 22 route declarations |
-| Backend | Express 4 · Node.js ≥22 (`node:sqlite`) | ~87 APIs, listens on `127.0.0.1:8002` only |
+| Frontend | React 19 · React Router 7 · Vite 7 · Tailwind 4 · TypeScript 5 | 22 pages, 23 route declarations |
+| Backend | Express 4 · Node.js ≥22 (`node:sqlite`) | 89 APIs, listens on `127.0.0.1:8002` only |
 | Data | SQLite (WAL) | 30 tables with automatic creation, migration and seeding |
 | Agent | `pi` CLI (local DeepSeek) | child process + SSE stream, credentials independent of `server/.env` |
 | Documents | `pdfjs-dist` · `mammoth` · `xlsx` · `jszip` · `sharp` · `cheerio` | extraction, chunking, BM25, image handling |
@@ -279,7 +280,7 @@ See sections **19.2 / 19.3** of `docs/GEO-AI-Agent-PRD.md` for the full table an
 
 | Status | Items |
 | --- | --- |
-| ✅ Shipped | five-step loop, 30 tables / 87 APIs / 21 pages, dual-track metrics, KB RAG, two content pipelines, link ledger, publishing schedule, SEO dashboard, RBAC and audit log |
+| ✅ Shipped | five-step loop, 30 tables / 89 APIs / 22 pages, agent workbench, dual-track metrics, KB RAG, two content pipelines, link ledger, publishing schedule, SEO dashboard, RBAC and audit log |
 | 🟡 Semi-automated, zero key | manual position entry, webmaster CSV import, consumer-side evidence capture, operator URL backfill, manual link checks |
 | 🔵 Needs keys or OAuth | real probing on six providers, SerpAPI rankings and coverage, GSC / Baidu OAuth, scheduled scans and link checks |
 | 🟣 Planned (PRD V1.5 / V2.0) | competitor radar, real AIW, smart media selection, AI image / video, UTM attribution funnel, monthly PDF reports, billing, public API |

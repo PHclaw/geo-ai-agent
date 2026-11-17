@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Wizard from "./pages/Wizard";
 import Dashboard from "./pages/Dashboard";
+import Agent from "./pages/Agent";
 import Diagnosis from "./pages/Diagnosis";
 import Evidence from "./pages/Evidence";
 import PromptMatrix from "./pages/PromptMatrix";
@@ -29,6 +30,7 @@ export default function App() {
       <Route path="wizard" element={<Wizard />} />
       <Route element={<Layout />}>
         <Route index element={<Dashboard />} />
+        <Route path="agent" element={<Agent />} />
         <Route path="diagnosis" element={<Diagnosis />} />
         <Route path="evidence" element={<Evidence />} />
         <Route path="prompts" element={<PromptMatrix />} />

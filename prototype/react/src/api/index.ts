@@ -1157,6 +1157,50 @@ export const publishPlan = (brandId: string, id: string, url: string, note?: str
     body: { brandId, url, note },
   });
 
+/* ---------------- Agent 工作台 ---------------- */
+
+export type AgentPreset = { key: string; label: string; hint: string; example: string };
+
+export type AgentCard =
+  | { type: "article"; contentId: string; title: string; geos: number; chars: number; factIssues: number; compliance: number }
+  | { type: "plan"; created: number; warmup: number; geo: number; removed: number; hint: string }
+  | {
+      type: "placement";
+      budget: number;
+      picks: { name: string; price: number; aiw: number }[];
+      total: number;
+      remaining: number;
+      candidates: number;
+    }
+  | {
+      type: "analyze";
+      avi: number | null;
+      aviDelta: number | null;
+      mentionRate: number | null;
+      samples: number;
+      exposureRate: number | null;
+      exposureSource: string;
+      keywords: number;
+      conflicts: number;
+    }
+  | { type: "profile"; params: { name?: string; city?: string; industry?: string } }
+  | { type: "presets"; presets: AgentPreset[] };
+
+export type AgentActResult = {
+  ok: true;
+  intent: string;
+  label: string;
+  reply: string;
+  card: AgentCard | null;
+  actions: { label: string; to: string }[];
+  presets: AgentPreset[];
+};
+
+export const agentAct = (brandId: string, text: string) =>
+  api<AgentActResult>("/agent/act", { method: "POST", body: { brandId, text } });
+
+export const fetchAgentPresets = () => api<{ presets: AgentPreset[] }>("/agent/presets");
+
 /* ---------------- hooks ---------------- */
 
 export function useApi<T>(fn: (() => Promise<T>) | null, deps: unknown[] = []) {

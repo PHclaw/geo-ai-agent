@@ -85,6 +85,7 @@ AI 全景诊断 → 知识资产建库 → 内容生产 → 分发与排期 → 
 
 ## 核心特性
 
+- 🤖 **Agent 工作台**：一句话触发建档 / 内容生产 / 发布排期 / 媒体投放 / 数据分析，只做「识别意图 → 调已有接口」，结果以卡片返回并跳转到对应页面
 - 🔍 **双轨 AI 可见度诊断**：6 平台探测适配器（超时 / 重试 / 错误分类），`aviModel` 与 `aviCend` 各算各的，四象限归因，不把模型口径冒充客户真实可见度
 - 🧠 **知识资产建库**：PDF / DOCX / MD / 图片上传后抽取切片，BM25 中文检索；事实卡带冲突检测与「保留一条 + 其余归档」的唯一口径
 - ✍️ **可引用内容生产**：模板渲染按提问意图写不同分析段落，`pi` 智能体 SSE 流式长文写作；生成后自动做事实回比、合规拦截、SVG 数据图与 GEOS 六维评分
@@ -178,7 +179,7 @@ GEO Aiagent/
 ├── docs/
 │   └── GEO-AI-Agent-PRD.md   产品需求与实现文档（19 章）
 ├── server/                   Express + node:sqlite
-│   ├── index.js              约 87 个 API 与启动入口
+│   ├── index.js              89 个 API 与启动入口
 │   ├── db.js                 30 张表、迁移与种子数据
 │   ├── geo.js / probe.js / providers.js   AVI 计算 / 6 平台探测 / 凭证判定
 │   ├── seo.js / links.js / seo-import.js  SEO、链接台账、CSV 解析
@@ -186,7 +187,7 @@ GEO Aiagent/
 │   ├── agent/                piagent SSE、事实回比、合规、数据图、站点体检
 │   ├── scripts/              冒烟脚本与 e2e-agentflow.mjs
 │   └── *.test.js             node:test（6 个文件 / 25 个用例）
-├── prototype/react/          React 19 + Vite 7 + Tailwind 4（21 个页面）
+├── prototype/react/          React 19 + Vite 7 + Tailwind 4（22 个页面）
 └── deliverables/             交付物：横幅、框架图、闭环图、页面截图、生成样本、E2E 报告
 ```
 
@@ -198,8 +199,8 @@ GEO Aiagent/
 
 | 层 | 技术 | 说明 |
 | --- | --- | --- |
-| 前端 | React 19 · React Router 7 · Vite 7 · Tailwind 4 · TypeScript 5 | 21 个页面，22 条 Route 声明 |
-| 后端 | Express 4 · Node.js ≥22（`node:sqlite`） | 约 87 个 API，仅监听 `127.0.0.1:8002` |
+| 前端 | React 19 · React Router 7 · Vite 7 · Tailwind 4 · TypeScript 5 | 22 个页面，23 条 Route 声明 |
+| 后端 | Express 4 · Node.js ≥22（`node:sqlite`） | 89 个 API，仅监听 `127.0.0.1:8002` |
 | 数据 | SQLite（WAL） | 30 张表，自动建表 / 迁移 / 种子 |
 | 智能体 | `pi` CLI（本机 DeepSeek） | 子进程 + SSE 事件流，凭证独立于 `server/.env` |
 | 文档处理 | `pdfjs-dist` · `mammoth` · `xlsx` · `jszip` · `sharp` · `cheerio` | 上传抽取、切片、BM25、图片处理 |
@@ -278,7 +279,7 @@ API 分组与 30 张表清单见 `docs/GEO-AI-Agent-PRD.md` 的 **19.2 / 19.3**�
 
 | 状态 | 内容 |
 | --- | --- |
-| ✅ 已落地 | 五步闭环、30 张表 / 87 API / 21 页面、双轨指标、KB RAG、两条内容生成通道、链接台账、发布排期、SEO 看板、RBAC 与审计 |
+| ✅ 已落地 | 五步闭环、30 张表 / 89 API / 22 页面、Agent 工作台、双轨指标、KB RAG、两条内容生成通道、链接台账、发布排期、SEO 看板、RBAC 与审计 |
 | 🟡 半自动可用（零 Key） | 人工逐词位次录入、站长平台 CSV 导入、C 端取证、人工代投回填、手动链接巡检 |
 | 🔵 待接入（需 Key / 授权） | 6 家真实模型探测、SerpAPI 排名与收录、GSC / 百度站长 OAuth、定时扫描、定时巡检 |
 | 🟣 规划中（PRD V1.5 / V2.0） | 竞品雷达、真实 AIW、智能选媒、AI 图片 / 视频、UTM 归因漏斗、月报 PDF、支付账单、开放 API |

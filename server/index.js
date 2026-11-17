@@ -26,6 +26,7 @@ import { normalizeLink, extractHosts, checkLink, citationCounts, serpHitCounts }
 import { parseCsvRecords, computeExposure } from "./seo-import.js";
 import { renderArticle } from "./content-template.js";
 import { buildPlanSlots } from "./plan.js";
+import { routeIntent, describeIntent, AGENT_PRESETS } from "./agent-router.js";
 
 // 先加载 server/.env，再初始化任何依赖配置的模块
 loadEnv();
@@ -3950,45 +3951,166 @@ app.get(
 );
 
 /** 生成排期：只落「计划」，不代发；覆盖同品牌尚未发布的旧计划，避免重复堆积 */
+/** 排期生成：路由与 Agent 工作台共用，覆盖未发布的旧计划 */
+function applyPlanGeneration(brand, body = {}) {
+  const articles = db
+    .prepare("SELECT id, title FROM contents WHERE brand_id=? ORDER BY created_at DESC LIMIT 60")
+    .all(brand.id);
+  const { options, slots } = buildPlanSlots(body, articles);
+
+  const removed = db.prepare("DELETE FROM publish_plans WHERE brand_id=? AND state='planned'").run(brand.id).changes;
+  const ins = db.prepare(
+    `INSERT INTO publish_plans
+     (id, brand_id, content_id, title, kind, stage, channel, planned_at, state, url, note, created_at)
+     VALUES (?,?,?,?,?,?,?,?,'planned','','',?)`
+  );
+  db.exec("BEGIN");
+  try {
+    for (const s of slots) {
+      ins.run(id(), brand.id, s.contentId, s.title, s.kind, s.stage, s.channel, s.date, now());
+    }
+    db.exec("COMMIT");
+  } catch (e) {
+    db.exec("ROLLBACK");
+    throw new Error(`排期生成失败：${e.message}`);
+  }
+  return {
+    ok: true,
+    created: slots.length,
+    removed,
+    warmup: slots.filter((s) => s.stage === "warmup").length,
+    geo: slots.filter((s) => s.kind === "geo").length,
+    articlesAvailable: articles.length,
+    options,
+    hint: articles.length ? "" : "还没有内容文章，穿插位已临时用知识内容填充；生成文章后重新排期即可挂上 GEO 文章",
+  };
+}
+
 app.post(
   "/api/plans/generate",
+  requireAuth,
+  requireLevel("editor"),
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.body?.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    res.json(applyPlanGeneration(brand, req.body || {}));
+  })
+);
+
+/* ---------------- Agent 工作台：一句话 → 现有能力 ---------------- */
+
+app.get(
+  "/api/agent/presets",
+  requireAuth,
+  wrap((req, res) => res.json({ presets: AGENT_PRESETS }))
+);
+
+app.post(
+  "/api/agent/act",
   requireAuth,
   requireLevel("editor"),
   wrap((req, res) => {
     const b = req.body || {};
     const brand = ownedBrand(req, b.brandId);
     if (!brand) return res.status(404).json({ error: "品牌不存在" });
-    const articles = db
-      .prepare("SELECT id, title FROM contents WHERE brand_id=? ORDER BY created_at DESC LIMIT 60")
-      .all(brand.id);
-    const { options, slots } = buildPlanSlots(b, articles);
+    const text = String(b.text || "").trim();
+    if (!text) return res.status(400).json({ error: "请输入一句话指令" });
 
-    const removed = db.prepare("DELETE FROM publish_plans WHERE brand_id=? AND state='planned'").run(brand.id).changes;
-    const ins = db.prepare(
-      `INSERT INTO publish_plans
-       (id, brand_id, content_id, title, kind, stage, channel, planned_at, state, url, note, created_at)
-       VALUES (?,?,?,?,?,?,?,?,'planned','','',?)`
-    );
-    db.exec("BEGIN");
-    try {
-      for (const s of slots) {
-        ins.run(id(), brand.id, s.contentId, s.title, s.kind, s.stage, s.channel, s.date, now());
+    const r = routeIntent(text);
+    const actions = [];
+    let card = null;
+    let reply = describeIntent(r);
+
+    if (r.intent === "produce") {
+      const prompts = db.prepare("SELECT * FROM prompts WHERE brand_id=? ORDER BY created_at").all(brand.id);
+      const p = prompts.find((x) => x.intent === r.params.promptIntent) || prompts[0] || null;
+      const ctx = loadContext(brand.id);
+      const item = buildContent(brand, ctx, p, r.params.genre);
+      card = {
+        type: "article",
+        contentId: item.id,
+        title: item.title,
+        geos: item.geos,
+        chars: item.body.length,
+        factIssues: item.factIssues.length,
+        compliance: item.compliance.length,
+      };
+      reply = `已生成《${item.title}》，GEOS ${item.geos}，${item.body.length} 字，事实回比 ${item.factIssues.length} 个问题、合规 ${item.compliance.length} 项提示。`;
+      actions.push({ label: "打开内容创作", to: "/content" });
+    } else if (r.intent === "schedule") {
+      const out = applyPlanGeneration(brand, { ...r.params });
+      card = {
+        type: "plan",
+        created: out.created,
+        warmup: out.warmup,
+        geo: out.geo,
+        removed: out.removed,
+        hint: out.hint,
+      };
+      reply = `已生成 ${out.created} 条排期：养号 ${out.warmup} 条、GEO 文章 ${out.geo} 条。只落计划，不代发。`;
+      actions.push({ label: "查看发布排期", to: "/plan" });
+    } else if (r.intent === "placement") {
+      const media = db.prepare("SELECT name, price, aiw FROM media ORDER BY aiw DESC").all();
+      const budget = r.params.budget;
+      const picks = [];
+      let used = 0;
+      for (const m of media) {
+        const price = Number(m.price) || 0;
+        if (price <= 0 || used + price > budget) continue;
+        picks.push({ name: m.name, price, aiw: m.aiw });
+        used += price;
+        if (picks.length >= 6) break;
       }
-      db.exec("COMMIT");
-    } catch (e) {
-      db.exec("ROLLBACK");
-      return res.status(500).json({ error: `排期生成失败：${e.message}` });
+      card = {
+        type: "placement",
+        budget,
+        picks,
+        total: used,
+        remaining: budget - used,
+        candidates: media.length,
+      };
+      reply = `按 ${budget} 元预算挑了 ${picks.length} 家媒体，合计 ${used} 元，剩余 ${budget - used} 元；不会自动下单。`;
+      actions.push({ label: "去媒体分发", to: "/media" });
+    } else if (r.intent === "analyze") {
+      const rows = db
+        .prepare("SELECT * FROM metrics_daily WHERE brand_id=? ORDER BY date DESC LIMIT 2")
+        .all(brand.id);
+      const latest = rows[0] || {};
+      const prev = rows[1] || latest;
+      const seo = db
+        .prepare("SELECT * FROM seo_daily WHERE brand_id=? ORDER BY date DESC LIMIT 1")
+        .get(brand.id) || {};
+      const keywords = db
+        .prepare("SELECT COUNT(*) c FROM seo_keywords WHERE brand_id=? AND enabled=1")
+        .get(brand.id).c;
+      const conflicts = db
+        .prepare("SELECT COUNT(*) c FROM facts WHERE brand_id=? AND status='conflict'")
+        .get(brand.id).c;
+      card = {
+        type: "analyze",
+        avi: latest.avi ?? null,
+        aviDelta: latest.avi != null ? latest.avi - (prev.avi ?? latest.avi) : null,
+        mentionRate: latest.mention_rate ?? null,
+        samples: latest.samples ?? 0,
+        exposureRate: seo.exposure_rate ?? null,
+        exposureSource: seo.source || "none",
+        keywords,
+        conflicts,
+      };
+      reply = `最新 AVI ${card.avi ?? "—"}，提及率 ${card.mentionRate ?? "—"}%，样本 ${card.samples}；SEO 曝光率 ${card.exposureRate ?? "—"}%（来源 ${card.exposureSource}），关键词 ${keywords} 个、事实冲突 ${conflicts} 处。`;
+      actions.push({ label: "看监测复盘", to: "/monitor" }, { label: "看 SEO 看板", to: "/seo" });
+    } else if (r.intent === "profile") {
+      card = { type: "profile", params: r.params };
+      reply = r.params.name
+        ? `已解析：${r.params.name} / ${r.params.city || "城市待填"} / ${r.params.industry || "行业待填"}，去向导确认后创建。`
+        : "没解析到品牌信息。可以按「新建品牌：名称，城市，行业」的格式再说一次。";
+      actions.push({ label: "去建档向导", to: "/wizard" });
+    } else {
+      card = { type: "presets", presets: AGENT_PRESETS };
+      reply = "没识别出动作。可以直接点下面的预设指令，或把需求说得更具体一些。";
     }
-    res.json({
-      ok: true,
-      created: slots.length,
-      removed,
-      warmup: slots.filter((s) => s.stage === "warmup").length,
-      geo: slots.filter((s) => s.kind === "geo").length,
-      articlesAvailable: articles.length,
-      options,
-      hint: articles.length ? "" : "还没有内容文章，穿插位已临时用知识内容填充；生成文章后重新排期即可挂上 GEO 文章",
-    });
+
+    res.json({ ok: true, intent: r.intent, label: r.label, reply, card, actions, presets: AGENT_PRESETS });
   })
 );
 

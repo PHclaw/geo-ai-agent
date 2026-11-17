@@ -8,6 +8,7 @@ type NavGroup = { label: string; items: NavItem[] };
 
 const NAV: NavGroup[] = [
   { label: "总览", items: [{ to: "/", label: "工作台", icon: "grid" }] },
+  { label: "Agent", items: [{ to: "/agent", label: "Agent 工作台", icon: "radar" }] },
   {
     label: "① 诊断",
     items: [
@@ -52,6 +53,7 @@ const NAV: NavGroup[] = [
 
 const TITLES: Record<string, { title: string; crumb: string }> = {
   "/": { title: "工作台", crumb: "和序装饰 · 南京 · 4 家门店" },
+  "/agent": { title: "Agent 工作台", crumb: "和序装饰 › Agent › 一句话触发" },
   "/diagnosis": { title: "AI 全景诊断", crumb: "和序装饰 › 诊断 › 2026-10-27" },
   "/evidence": { title: "C 端取证", crumb: "和序装饰 › 诊断 › A 级证据采集" },
   "/prompts": { title: "提问矩阵", crumb: "和序装饰 › 诊断 › 取证题库" },
