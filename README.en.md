@@ -85,7 +85,7 @@ This system combines probing, a knowledge base, structured content, a source led
 
 ## Key Features
 
-- 🤖 **Agent workbench**: one sentence to profile, produce, schedule, plan placements or analyze — it only routes intent to existing endpoints and returns result cards with links to the matching page
+- 🤖 **Agent workbench**: one sentence to profile, produce, schedule, plan placements or analyze; every parameter is editable with defaults labelled, destructive actions ask for confirmation first, and non-task questions are answered from the company knowledge base with sources (or an explicit "nothing found")
 - 🔍 **Dual-track AI visibility diagnosis**: six platform adapters with timeout, retry and error classification; `aviModel` and `aviCend` are computed separately with four-quadrant attribution, so model-side results never impersonate real consumer visibility
 - 🧠 **Knowledge assets**: PDF / DOCX / MD / image upload with text extraction and chunking, BM25 retrieval for Chinese; fact cards include conflict detection and a single source of truth (keep one, archive the rest)
 - ✍️ **Citable content production**: template rendering writes different analysis sections per question intent; the `pi` CLI agent streams long-form articles over SSE; every draft goes through fact verification, compliance blocking, SVG data figures and a six-dimension GEOS score

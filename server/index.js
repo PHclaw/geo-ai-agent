@@ -26,7 +26,7 @@ import { normalizeLink, extractHosts, checkLink, citationCounts, serpHitCounts }
 import { parseCsvRecords, computeExposure } from "./seo-import.js";
 import { renderArticle } from "./content-template.js";
 import { buildPlanSlots } from "./plan.js";
-import { routeIntent, describeIntent, AGENT_PRESETS } from "./agent-router.js";
+import { routeIntent, describeIntent, fieldsFor, needsConfirm, selectAnswerHits, AGENT_PRESETS } from "./agent-router.js";
 
 // 先加载 server/.env，再初始化任何依赖配置的模块
 loadEnv();
@@ -4017,15 +4017,33 @@ app.post(
     if (!text) return res.status(400).json({ error: "请输入一句话指令" });
 
     const r = routeIntent(text);
+    const baseFields = fieldsFor(r.intent, r.params, r.provided);
+
+    // 界面回填的参数优先于句子解析值
+    const rawOverrides = b.params && typeof b.params === "object" ? b.params : {};
+    const overrides = {};
+    for (const [k, v] of Object.entries(rawOverrides)) {
+      if (v === "" || v === null || v === undefined) continue;
+      overrides[k] = v;
+    }
+    const p = { ...r.params };
+    for (const f of baseFields) {
+      if (overrides[f.key] === undefined) continue;
+      p[f.key] = f.type === "number" ? Number(overrides[f.key]) : String(overrides[f.key]);
+    }
+    const provided = [...new Set([...r.provided, ...Object.keys(overrides).filter((k) => baseFields.some((f) => f.key === k))])];
+    const fields = fieldsFor(r.intent, p, provided);
+    const pending = needsConfirm(r.intent, r.provided, overrides) && !b.confirm;
+
     const actions = [];
     let card = null;
-    let reply = describeIntent(r);
+    let reply = describeIntent({ ...r, params: p });
 
     if (r.intent === "produce") {
       const prompts = db.prepare("SELECT * FROM prompts WHERE brand_id=? ORDER BY created_at").all(brand.id);
-      const p = prompts.find((x) => x.intent === r.params.promptIntent) || prompts[0] || null;
+      const q = prompts.find((x) => x.intent === p.promptIntent) || prompts[0] || null;
       const ctx = loadContext(brand.id);
-      const item = buildContent(brand, ctx, p, r.params.genre);
+      const item = buildContent(brand, ctx, q, p.genre);
       card = {
         type: "article",
         contentId: item.id,
@@ -4038,20 +4056,18 @@ app.post(
       reply = `已生成《${item.title}》，GEOS ${item.geos}，${item.body.length} 字，事实回比 ${item.factIssues.length} 个问题、合规 ${item.compliance.length} 项提示。`;
       actions.push({ label: "打开内容创作", to: "/content" });
     } else if (r.intent === "schedule") {
-      const out = applyPlanGeneration(brand, { ...r.params });
-      card = {
-        type: "plan",
-        created: out.created,
-        warmup: out.warmup,
-        geo: out.geo,
-        removed: out.removed,
-        hint: out.hint,
-      };
-      reply = `已生成 ${out.created} 条排期：养号 ${out.warmup} 条、GEO 文章 ${out.geo} 条。只落计划，不代发。`;
-      actions.push({ label: "查看发布排期", to: "/plan" });
+      if (pending) {
+        card = { type: "confirm", fields };
+        reply = "排期会覆盖该品牌尚未发布的旧计划。请先确认这几项参数，再生成。";
+      } else {
+        const out = applyPlanGeneration(brand, { ...p });
+        card = { type: "plan", created: out.created, warmup: out.warmup, geo: out.geo, removed: out.removed, hint: out.hint };
+        reply = `已生成 ${out.created} 条排期：养号 ${out.warmup} 条、GEO 文章 ${out.geo} 条。只落计划，不代发。`;
+        actions.push({ label: "查看发布排期", to: "/plan" });
+      }
     } else if (r.intent === "placement") {
       const media = db.prepare("SELECT name, price, aiw FROM media ORDER BY aiw DESC").all();
-      const budget = r.params.budget;
+      const budget = p.budget;
       const picks = [];
       let used = 0;
       for (const m of media) {
@@ -4061,14 +4077,7 @@ app.post(
         used += price;
         if (picks.length >= 6) break;
       }
-      card = {
-        type: "placement",
-        budget,
-        picks,
-        total: used,
-        remaining: budget - used,
-        candidates: media.length,
-      };
+      card = { type: "placement", budget, picks, total: used, remaining: budget - used, candidates: media.length };
       reply = `按 ${budget} 元预算挑了 ${picks.length} 家媒体，合计 ${used} 元，剩余 ${budget - used} 元；不会自动下单。`;
       actions.push({ label: "去媒体分发", to: "/media" });
     } else if (r.intent === "analyze") {
@@ -4100,17 +4109,46 @@ app.post(
       reply = `最新 AVI ${card.avi ?? "—"}，提及率 ${card.mentionRate ?? "—"}%，样本 ${card.samples}；SEO 曝光率 ${card.exposureRate ?? "—"}%（来源 ${card.exposureSource}），关键词 ${keywords} 个、事实冲突 ${conflicts} 处。`;
       actions.push({ label: "看监测复盘", to: "/monitor" }, { label: "看 SEO 看板", to: "/seo" });
     } else if (r.intent === "profile") {
-      card = { type: "profile", params: r.params };
-      reply = r.params.name
-        ? `已解析：${r.params.name} / ${r.params.city || "城市待填"} / ${r.params.industry || "行业待填"}，去向导确认后创建。`
-        : "没解析到品牌信息。可以按「新建品牌：名称，城市，行业」的格式再说一次。";
+      card = { type: "profile", params: p };
+      reply = p.name
+        ? `已解析：${p.name} / ${p.city || "城市待填"} / ${p.industry || "行业待填"}，去向导确认后创建。`
+        : "没解析到品牌信息。可以在下面补齐名称、城市与行业，或点「去建档向导」。";
       actions.push({ label: "去建档向导", to: "/wizard" });
     } else {
-      card = { type: "presets", presets: AGENT_PRESETS };
-      reply = "没识别出动作。可以直接点下面的预设指令，或把需求说得更具体一些。";
+      // 非任务输入：先在企业资料里检索，按资料回答；没命中就说明没有，不编
+      let hits = [];
+      try {
+        const raw = kbSearch.buildContext(brand.id, text, 8).hits || [];
+        hits = selectAnswerHits(text, raw, 4);
+      } catch {
+        hits = [];
+      }
+      if (hits.length) {
+        card = {
+          type: "answer",
+          hits: hits.map((h) => ({
+            text: String(h.text || "").slice(0, 160),
+            docName: h.docName || "",
+          })),
+        };
+        reply = `在企业资料里找到 ${hits.length} 段相关内容：`;
+      } else {
+        card = { type: "answer", hits: [] };
+        reply = "企业知识库里没有检索到相关资料。可以先把文档传到「文档与检索」，或直接点下面的预设指令。";
+      }
     }
 
-    res.json({ ok: true, intent: r.intent, label: r.label, reply, card, actions, presets: AGENT_PRESETS });
+    res.json({
+      ok: true,
+      intent: r.intent,
+      label: r.label,
+      reply,
+      card,
+      actions,
+      presets: AGENT_PRESETS,
+      fields,
+      needsConfirm: pending,
+    });
   })
 );
 

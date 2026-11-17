@@ -1161,6 +1161,19 @@ export const publishPlan = (brandId: string, id: string, url: string, note?: str
 
 export type AgentPreset = { key: string; label: string; hint: string; example: string };
 
+export type AgentField = {
+  key: string;
+  label: string;
+  type: "number" | "select" | "text";
+  value: string | number;
+  fromUser: boolean;
+  options?: string[];
+  min?: number;
+  max?: number;
+  step?: number;
+  defaultValue?: number;
+};
+
 export type AgentCard =
   | { type: "article"; contentId: string; title: string; geos: number; chars: number; factIssues: number; compliance: number }
   | { type: "plan"; created: number; warmup: number; geo: number; removed: number; hint: string }
@@ -1184,7 +1197,9 @@ export type AgentCard =
       conflicts: number;
     }
   | { type: "profile"; params: { name?: string; city?: string; industry?: string } }
-  | { type: "presets"; presets: AgentPreset[] };
+  | { type: "presets"; presets: AgentPreset[] }
+  | { type: "answer"; hits: { text: string; docName: string }[] }
+  | { type: "confirm" };
 
 export type AgentActResult = {
   ok: true;
@@ -1194,10 +1209,16 @@ export type AgentActResult = {
   card: AgentCard | null;
   actions: { label: string; to: string }[];
   presets: AgentPreset[];
+  fields: AgentField[];
+  needsConfirm: boolean;
 };
 
-export const agentAct = (brandId: string, text: string) =>
-  api<AgentActResult>("/agent/act", { method: "POST", body: { brandId, text } });
+export const agentAct = (
+  brandId: string,
+  text: string,
+  params?: Record<string, unknown>,
+  confirm?: boolean
+) => api<AgentActResult>("/agent/act", { method: "POST", body: { brandId, text, params, confirm } });
 
 export const fetchAgentPresets = () => api<{ presets: AgentPreset[] }>("/agent/presets");
 

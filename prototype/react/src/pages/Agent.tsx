@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Badge, CardHead, Note, cn, td } from "../components/ui";
-import { agentAct, fetchAgentPresets, useSession, type AgentCard, type AgentPreset } from "../api";
+import {
+  agentAct,
+  fetchAgentPresets,
+  useSession,
+  type AgentCard,
+  type AgentField,
+  type AgentPreset,
+} from "../api";
 
 type Msg = {
   id: number;
@@ -9,14 +16,21 @@ type Msg = {
   text: string;
   card?: AgentCard | null;
   actions?: { label: string; to: string }[];
+  fields?: AgentField[];
+  needsConfirm?: boolean;
 };
 
 const inputCls =
   "w-full resize-none rounded-xl border border-hair bg-[#fbfbfc] px-3 py-2.5 text-[12.5px] leading-relaxed outline-none focus:border-accent/60 focus:bg-white focus:ring-3 focus:ring-accent/12";
+const fieldCls =
+  "h-8 w-full rounded-lg border border-hair bg-white px-2 text-[11.5px] outline-none focus:border-accent/60 focus:ring-2 focus:ring-accent/12";
 const btnCls =
   "h-9 shrink-0 rounded-lg px-4 text-[12px] font-medium text-white bg-accent hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:bg-accent/50";
+const smallBtnCls =
+  "h-8 rounded-lg px-3 text-[11.5px] font-medium text-white bg-accent hover:bg-[#0077ed] disabled:cursor-not-allowed disabled:bg-accent/50";
 
-const WELCOME = "我是工作台入口：你说一句话，我把它路由到已有能力——生成文章、排期、投放建议、数据分析或建档。只调用系统已有接口，不编数据、不代发。";
+const WELCOME =
+  "说一句话，我判断是要干活还是回答问题：\n· 干活：生成文章、排期、投放建议、数据分析、建档\n· 问答：从企业知识库里找资料回答，并标出来源\n参数不够时我会先把参数摆出来让你改，不会闷头按默认值执行。";
 
 export default function Agent() {
   const { brandId, me } = useSession();
@@ -39,18 +53,28 @@ export default function Agent() {
       .catch(() => setPresets([]));
   }, []);
 
-  async function send(text?: string) {
+  async function send(text?: string, params?: Record<string, unknown>, confirm?: boolean) {
     const t = String(text ?? input).trim();
     if (!t || !brandId || busy) return;
-    setInput("");
-    setMsgs((m) => [...m, { id: seq.current++, role: "user", text: t }]);
+    if (!params) {
+      setInput("");
+      setMsgs((m) => [...m, { id: seq.current++, role: "user", text: t }]);
+    }
     setBusy(true);
     try {
-      const r = await agentAct(brandId, t);
+      const r = await agentAct(brandId, t, params, confirm);
       setPresets(r.presets || []);
       setMsgs((m) => [
         ...m,
-        { id: seq.current++, role: "agent", text: r.reply, card: r.card, actions: r.actions },
+        {
+          id: seq.current++,
+          role: "agent",
+          text: r.reply,
+          card: r.card,
+          actions: r.actions,
+          fields: r.fields || [],
+          needsConfirm: r.needsConfirm,
+        },
       ]);
     } catch (e) {
       setMsgs((m) => [
@@ -64,26 +88,26 @@ export default function Agent() {
 
   return (
     <div className="enter flex flex-col gap-3.5">
-      <Note tone="info" title="边界说明：">
-        这里只做「识别意图 → 调已有接口」，不额外调用模型；排期只生成计划、不代发；投放只给组合建议、不下单；
-        识别不到的动作会返回预设指令，不会硬猜。
+      <Note tone="info" title="怎么理解它：">
+        这里是入口，不是黑箱。能识别的动作会调已有接口并把参数摊开给你改；识别不到就在企业资料里检索后回答，
+        检索不到就直说没有，不编内容。排期只生成计划、不代发；投放只给建议、不下单。
       </Note>
 
       <div className="rounded-2xl border border-hair bg-white">
         <div className="border-b border-hair px-4 py-3">
           <CardHead
             title="Agent 工作台"
-            sub="一句话触发 · 结果以卡片返回 · 每次操作都可回溯到对应页面"
+            sub="一句话触发 · 参数可改 · 问答标来源 · 每次操作都可回溯"
             right={<Badge tone={busy ? "warn" : "ok"}>{busy ? "执行中" : "就绪"}</Badge>}
           />
         </div>
 
-        <div ref={listRef} className="flex max-h-[480px] min-h-[360px] flex-col gap-3 overflow-y-auto px-4 py-4">
+        <div ref={listRef} className="flex max-h-[520px] min-h-[380px] flex-col gap-3 overflow-y-auto px-4 py-4">
           {msgs.map((m) => (
             <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
               <div
                 className={cn(
-                  "max-w-[88%] rounded-2xl px-3.5 py-2.5 text-[12.5px] leading-relaxed",
+                  "max-w-[90%] rounded-2xl px-3.5 py-2.5 text-[12.5px] leading-relaxed",
                   m.role === "user" ? "bg-accent text-white" : "bg-[#f6f6f7] text-ink"
                 )}
               >
@@ -101,6 +125,19 @@ export default function Agent() {
                       </Link>
                     ))}
                   </div>
+                )}
+                {!!m.fields?.length && (
+                  <details open={m.needsConfirm} className="mt-2">
+                    <summary className="cursor-pointer select-none text-[10.5px] text-accent">
+                      {m.needsConfirm ? "待确认：改好参数后生成" : "调整参数重跑"}
+                    </summary>
+                    <FieldForm
+                      fields={m.fields}
+                      disabled={busy || !canWrite}
+                      submitLabel={m.needsConfirm ? "确认生成" : "按这些参数重跑"}
+                      onSubmit={(v) => void send(m.text, v, true)}
+                    />
+                  </details>
                 )}
               </div>
             </div>
@@ -135,7 +172,7 @@ export default function Agent() {
                 }
               }}
               rows={2}
-              placeholder="例如：给 AgentFlow 生成一篇比较类文章 / 按 4 条养号 3:1 穿插生成 4 周排期 / 1 万元预算投 AI 行业媒体"
+              placeholder="干活：给 AgentFlow 生成一篇比较类文章 / 生成 4 周排期 / 1 万元投 AI 媒体　问答：AgentFlow 支持哪些部署方式"
               className={inputCls}
             />
             <button onClick={() => void send()} disabled={busy || !canWrite || !input.trim()} className={btnCls}>
@@ -143,10 +180,63 @@ export default function Agent() {
             </button>
           </div>
           <div className="mt-2 text-[10.5px] text-ink3">
-            Enter 发送，Shift + Enter 换行。生成的排期与文章会真实落库，可在对应页面继续编辑。
+            Enter 发送，Shift + Enter 换行。带默认值的参数会标「默认」，改完再执行；生成的文章与排期会真实落库。
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FieldForm({
+  fields,
+  submitLabel,
+  onSubmit,
+  disabled,
+}: {
+  fields: AgentField[];
+  submitLabel: string;
+  onSubmit: (values: Record<string, string>) => void;
+  disabled: boolean;
+}) {
+  const [vals, setVals] = useState<Record<string, string>>(() =>
+    Object.fromEntries(fields.map((f) => [f.key, String(f.value ?? "")]))
+  );
+  const set = (k: string, v: string) => setVals((prev) => ({ ...prev, [k]: v }));
+
+  return (
+    <div className="mt-2 rounded-xl border border-hair bg-white p-3">
+      <div className="grid gap-2 sm:grid-cols-2">
+        {fields.map((f) => (
+          <label key={f.key} className="flex items-center gap-2 text-[11px]">
+            <span className="w-[74px] shrink-0 text-ink3">{f.label}</span>
+            {f.type === "select" ? (
+              <select value={vals[f.key] ?? ""} onChange={(e) => set(f.key, e.target.value)} className={fieldCls}>
+                {(f.options || []).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={f.type === "number" ? "number" : "text"}
+                value={vals[f.key] ?? ""}
+                min={f.min}
+                max={f.max}
+                step={f.step}
+                onChange={(e) => set(f.key, e.target.value)}
+                placeholder={f.type === "text" ? "未填" : ""}
+                className={fieldCls}
+              />
+            )}
+            {!f.fromUser && <span className="shrink-0 text-[9.5px] text-[#a35f12]">默认</span>}
+          </label>
+        ))}
+      </div>
+      <button onClick={() => onSubmit(vals)} disabled={disabled} className={cn(smallBtnCls, "mt-2.5")}>
+        {submitLabel}
+      </button>
     </div>
   );
 }
@@ -260,6 +350,25 @@ function CardView({ card }: { card: AgentCard }) {
             <span className="text-ink">{v}</span>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (card.type === "answer") {
+    return (
+      <div className="mt-2 rounded-xl border border-hair bg-white p-3">
+        {card.hits.length ? (
+          <ul className="flex flex-col gap-2.5">
+            {card.hits.map((h, i) => (
+              <li key={i} className="text-[11.5px] leading-relaxed text-ink2">
+                <div>{h.text}</div>
+                {h.docName && <div className="mt-0.5 text-[10px] text-ink3">来源：{h.docName}</div>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="text-[11.5px] text-ink3">没有命中企业资料，未生成任何内容。</div>
+        )}
       </div>
     );
   }

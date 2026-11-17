@@ -1,7 +1,8 @@
 /* ============================================================
-   Agent 工作台：一句话 → 意图与参数（纯函数，无 IO）
+   Agent 工作台：一句话 → 意图、参数与可编辑字段（纯函数，无 IO）
    - 只做确定性规则匹配，不调用任何模型
-   - 匹配不到就返回 unknown，由前端展示预设指令，不瞎猜
+   - 参数分「用户给的」与「默认的」，默认项要在界面上标出来让人改
+   - 识别不到具体动作时走知识库问答（chat），不硬拦成预设
    ============================================================ */
 
 export const AGENT_PRESETS = [
@@ -69,38 +70,57 @@ function pickNumber(text, re) {
 
 export function routeIntent(raw) {
   const text = String(raw || "").trim();
-  if (!text) return { intent: "unknown", label: "未识别", params: {}, matched: "" };
+  if (!text) return { intent: "chat", label: "自由问答", params: {}, provided: [], matched: "" };
 
   const rule = RULES.find((r) => r.re.test(text));
   if (!rule) {
-    return { intent: "unknown", label: "未识别", params: {}, matched: "" };
+    return { intent: "chat", label: "自由问答", params: { query: text }, provided: ["query"], matched: "" };
   }
 
   const params = {};
+  const provided = [];
+  const set = (key, val) => {
+    if (val === null || val === undefined) return;
+    params[key] = val;
+    provided.push(key);
+  };
 
   if (rule.intent === "produce") {
-    Object.assign(params, pickGenre(text));
+    const g = pickGenre(text);
+    params.genre = g.genre;
+    params.promptIntent = g.promptIntent;
+    if (GENRE_RULES.some((r) => r.re.test(text))) provided.push("genre", "promptIntent");
   }
 
   if (rule.intent === "schedule") {
-    params.warmupCount = pickNumber(text, /(\d+)\s*条?\s*(?:养号|知识)/) ?? 4;
-    params.ratio = pickNumber(text, /(\d+)\s*[:：]\s*1/) ?? 3;
-    params.weeks = pickNumber(text, /(\d+)\s*周/) ?? 4;
-    params.intervalDays = pickNumber(text, /(?:间隔|每)\s*(\d+)\s*天/) ?? 2;
+    const warmup = pickNumber(text, /(\d+)\s*条?\s*(?:养号|知识)/);
+    const ratio = pickNumber(text, /(\d+)\s*[:：]\s*1/);
+    const weeks = pickNumber(text, /(\d+)\s*周/);
+    const interval = pickNumber(text, /(?:间隔|每)\s*(\d+)\s*天/);
+    params.warmupCount = warmup ?? 4;
+    params.ratio = ratio ?? 3;
+    params.weeks = weeks ?? 4;
+    params.intervalDays = interval ?? 2;
+    if (warmup !== null) provided.push("warmupCount");
+    if (ratio !== null) provided.push("ratio");
+    if (weeks !== null) provided.push("weeks");
+    if (interval !== null) provided.push("intervalDays");
   }
 
   if (rule.intent === "placement") {
     const wan = pickNumber(text, /(\d+(?:\.\d+)?)\s*万/);
     const yuan = pickNumber(text, /(\d+)\s*元/);
-    params.budget = wan ? Math.round(wan * 10000) : yuan || 10000;
+    const budget = wan ? Math.round(wan * 10000) : yuan || 10000;
+    params.budget = budget;
+    if (wan || yuan) provided.push("budget");
   }
 
   if (rule.intent === "profile") {
     const m = text.match(/(?:新建品牌|建档|创建品牌)[:：]?\s*([^，,；;]+)[，,；;]\s*([^，,；;]+)[，,；;]\s*(.+)$/);
     if (m) {
-      params.name = m[1].trim().slice(0, 40);
-      params.city = m[2].trim().slice(0, 20);
-      params.industry = m[3].trim().slice(0, 40);
+      set("name", m[1].trim().slice(0, 40));
+      set("city", m[2].trim().slice(0, 20));
+      set("industry", m[3].trim().slice(0, 40));
     }
   }
 
@@ -108,15 +128,105 @@ export function routeIntent(raw) {
     intent: rule.intent,
     label: AGENT_PRESETS.find((p) => p.key === rule.intent)?.label || rule.intent,
     params,
+    provided,
     matched: (text.match(rule.re) || [""])[0],
   };
 }
 
-/** 给前端的结果文案：不承诺做不到的事，明确写出「只生成、不代发」等边界 */
+/** 每个意图的可编辑参数；value 为解析值或默认值，provided 决定界面上是否标「默认」 */
+export function fieldsFor(intent, params = {}, provided = []) {
+  const make = (key, label, type, extra = {}) => {
+    const has = params[key] !== undefined && params[key] !== "";
+    return {
+      key,
+      label,
+      type,
+      value: has ? params[key] : extra.defaultValue ?? "",
+      fromUser: provided.includes(key),
+      ...extra,
+    };
+  };
+
+  switch (intent) {
+    case "produce":
+      return [
+        make("genre", "体裁", "select", { options: ["攻略", "比较", "推荐", "口碑", "本地"], defaultValue: "攻略" }),
+        make("promptIntent", "提问意图", "select", { options: ["认知", "比较", "决策", "口碑", "本地"], defaultValue: "认知" }),
+      ];
+    case "schedule":
+      return [
+        make("warmupCount", "养号条数", "number", { min: 0, max: 20, defaultValue: 4 }),
+        make("ratio", "知识 : GEO", "number", { min: 1, max: 9, defaultValue: 3 }),
+        make("weeks", "周期（周）", "number", { min: 1, max: 12, defaultValue: 4 }),
+        make("intervalDays", "间隔（天）", "number", { min: 1, max: 14, defaultValue: 2 }),
+      ];
+    case "placement":
+      return [make("budget", "预算（元）", "number", { min: 1000, max: 1000000, step: 1000, defaultValue: 10000 })];
+    case "profile":
+      return [
+        make("name", "品牌名", "text"),
+        make("city", "城市", "text"),
+        make("industry", "行业", "text"),
+        make("siteUrl", "官网", "text"),
+      ];
+    default:
+      return [];
+  }
+}
+
+/** 有副作用的动作（会覆盖未发布计划）在参数不完整时先确认 */
+export function needsConfirm(intent, provided, overrides = {}) {
+  if (intent !== "schedule") return false;
+  const keys = ["warmupCount", "ratio", "weeks", "intervalDays"];
+  const anyOverride = Object.keys(overrides).some((k) => keys.includes(k));
+  return !anyOverride && !keys.some((k) => provided.includes(k));
+}
+
+const STOP_WORDS =
+  /(什么|怎么|如何|哪些|哪个|需要|可以|能否|是否|我们|你们|他们|这个|那个|一个|请问|帮我|一下|支持|介绍|说说|准备|方式|情况|相关|内容|主要|一般|整体|具体|东西|事情|时候|问题|方面|部分)/g;
+
+/** 中文取 2-gram（去停用词），英文/数字取整词；英文只作加分，不作硬条件 */
+function queryTokens(text) {
+  const s = String(text || "").toLowerCase();
+  const zh = s.replace(/[^\u4e00-\u9fff]/g, "").replace(STOP_WORDS, "");
+  const grams = [];
+  for (let i = 0; i < zh.length - 1; i += 1) grams.push(zh.slice(i, i + 2));
+  const en = [...s.matchAll(/[a-z][a-z0-9]{2,}/g)].map((m) => m[0]);
+  return { grams: [...new Set(grams)], en: [...new Set(en)] };
+}
+
+/** 片段可用性：过滤章节标题、编号碎片、引用块、表格与代码块 */
+function usableSnippet(text) {
+  const s = String(text || "").trim();
+  if (s.length < 24) return false;
+  if (/^(?:[一二三四五六七八九十]+、|\d+(?:\.\d+)*\s|\d+[）)])/.test(s)) return false;
+  if (/^(?:```|>|\||-{3,}|={3,}|#)/.test(s)) return false;
+  if (/\|\s*-{3,}/.test(s)) return false;
+  return true;
+}
+
+/**
+ * 问答召回筛选：先按可用性过滤，再要求查询与片段有至少两个实词二元组重叠。
+ * 中文 BM25 容易把「需要 / 准备」这类虚词匹配到无关段落，这里做一层确定性校验。
+ */
+export function selectAnswerHits(query, hits = [], limit = 4) {
+  const { grams, en } = queryTokens(query);
+  const need = Math.min(2, grams.length);
+  return (Array.isArray(hits) ? hits : [])
+    .filter((h) => usableSnippet(h?.text))
+    .filter((h) => {
+      const t = String(h.text).toLowerCase();
+      if (grams.length) return grams.filter((g) => t.includes(g)).length >= need;
+      if (en.length) return en.some((w) => t.includes(w));
+      return true;
+    })
+    .slice(0, limit);
+}
+
 export function describeIntent(r) {
   switch (r.intent) {
     case "produce":
-      return `按「${r.params.genre}」意图生成一篇模板文章，并做事实回比与合规检查。`;
+      return `按「${r.params.genre}」体裁、面向「${r.params.promptIntent}」类问题生成一篇模板文章，并做事实回比与合规检查。`;
     case "schedule":
       return `按养号 ${r.params.warmupCount} 条、知识:GEO = ${r.params.ratio}:1、${r.params.weeks} 周、每 ${r.params.intervalDays} 天一条生成排期（只落计划，不代发）。`;
     case "placement":
@@ -126,6 +236,6 @@ export function describeIntent(r) {
     case "profile":
       return "把解析到的品牌信息带到建档向导，由你确认后创建。";
     default:
-      return "没识别出动作。可以直接点下面的预设指令，或把需求说得更具体一些。";
+      return "";
   }
 }
