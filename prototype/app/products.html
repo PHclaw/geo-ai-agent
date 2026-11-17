@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>产品库 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+</head>
+<body data-page="products" data-title="产品库" data-crumb="和序装饰 › 企业资产 › 产品库">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <section class="grid g4">
+        <div class="kpi">
+          <div class="label">SKU 总数</div>
+          <div class="val">46<small>个</small></div>
+          <div class="foot"><span class="delta up">▲ 6</span><span class="sub">本月新增</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">参数完整度</div>
+          <div class="val">88<small>%</small></div>
+          <div class="foot"><span class="delta flat">— 0</span><span class="sub">5 个 SKU 缺关键参数</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">被内容引用</div>
+          <div class="val">24<small>个</small></div>
+          <div class="foot"><span class="delta up">▲ 8</span><span class="sub">22 个 SKU 从未被提及</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">AI 提及 SKU 数</div>
+          <div class="val">7<small>个</small></div>
+          <div class="foot"><span class="delta down">▼ 1</span><span class="sub">集中在整装套餐</span></div>
+        </div>
+      </section>
+
+      <div class="row mt18">
+        <span class="chip on">全部 46</span>
+        <span class="chip">整装套餐 12</span>
+        <span class="chip">老房翻新 9</span>
+        <span class="chip">局部改造 15</span>
+        <span class="chip">主材包 10</span>
+        <div class="push row">
+          <button class="btn" data-toast="已打开 Excel 导入（支持自定义参数映射）">批量导入</button>
+          <button class="btn primary" data-toast="已新建 SKU，请填写参数模板">+ 新建 SKU</button>
+        </div>
+      </div>
+
+      <section class="split mt12">
+        <div class="card flush">
+          <div class="card-hd">
+            <div>
+              <h2>产品 / 服务清单</h2>
+              <div class="sub">参数来自事实源，生成内容时自动注入，不允许模型自行编造</div>
+            </div>
+            <div class="seg"><button class="on">按类目</button><button>按引用量</button></div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>名称</th><th>类目</th><th>价格带</th><th>可售区域</th><th>关联内容</th><th>完整度</th><th>状态</th></tr>
+              </thead>
+              <tbody>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">整装标准套餐 · 三居</td>
+                  <td><span class="badge info">整装</span></td>
+                  <td class="strong">980–1,350 元/㎡</td>
+                  <td>南京主城</td>
+                  <td class="num">11 篇</td>
+                  <td><span class="badge ok">100%</span></td>
+                  <td><span class="badge ok">在用</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">老房翻新套餐 · 全拆改</td>
+                  <td><span class="badge info">翻新</span></td>
+                  <td class="strong">1,180–1,600 元/㎡</td>
+                  <td>南京主城 + 江宁</td>
+                  <td class="num">8 篇</td>
+                  <td><span class="badge ok">100%</span></td>
+                  <td><span class="badge ok">在用</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">厨卫局部改造</td>
+                  <td><span class="badge">局部</span></td>
+                  <td class="strong">18,800 元起</td>
+                  <td>南京主城</td>
+                  <td class="num">3 篇</td>
+                  <td><span class="badge warn">72%</span></td>
+                  <td><span class="badge warn">缺参数</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">环保主材包 · A 级</td>
+                  <td><span class="badge">主材</span></td>
+                  <td class="strong">32,000 元/套</td>
+                  <td>全区域</td>
+                  <td class="num">2 篇</td>
+                  <td><span class="badge ok">94%</span></td>
+                  <td><span class="badge ok">在用</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">阳台封窗与露台改造</td>
+                  <td><span class="badge">局部</span></td>
+                  <td class="strong">—</td>
+                  <td>南京主城</td>
+                  <td class="num">0 篇</td>
+                  <td><span class="badge bad">48%</span></td>
+                  <td><span class="badge bad">缺价格</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">适老化改造方案</td>
+                  <td><span class="badge purple">专项</span></td>
+                  <td class="strong">面议</td>
+                  <td>全区域</td>
+                  <td class="num">0 篇</td>
+                  <td><span class="badge warn">66%</span></td>
+                  <td><span class="badge">待推广</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#sku1">
+                  <td class="name">全屋收纳定制</td>
+                  <td><span class="badge">主材</span></td>
+                  <td class="strong">1,280 元/㎡ 起</td>
+                  <td>南京主城</td>
+                  <td class="num">0 篇</td>
+                  <td><span class="badge ok">90%</span></td>
+                  <td><span class="badge">待推广</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row" style="padding:12px 18px;border-top:1px solid var(--hair)">
+            <span class="sub">显示 7 / 46</span>
+            <span class="push sub">最后同步：今天 08:40</span>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>参数模板</h3><span class="badge info">行业：家装</span></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="sub" style="margin-bottom:8px">该行业建议至少覆盖 9 个参数，AI 抽取时更易命中：</div>
+              <div class="row tight">
+                <span class="badge ok">面积区间</span>
+                <span class="badge ok">计价方式</span>
+                <span class="badge ok">包含项</span>
+                <span class="badge ok">不含项</span>
+                <span class="badge ok">工期</span>
+                <span class="badge warn">主材品牌</span>
+                <span class="badge warn">质保年限</span>
+                <span class="badge bad">增项规则</span>
+                <span class="badge bad">付款节点</span>
+              </div>
+              <div class="note mt12"><span class="ico">i</span><div>「增项规则」是用户最常追问、AI 最难编造的参数，补齐后决策型问题命中率通常提升明显。</div></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>产品对比页</h3><span class="badge ok">已生成</span></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="li">
+                <span class="lead g">页</span>
+                <div class="txt"><div class="t1">/products/compare</div><div class="t2">含 Product + Offer 结构化数据</div></div>
+                <a class="btn sm" href="site.html">查看</a>
+              </div>
+              <div class="li">
+                <span class="lead b">引</span>
+                <div class="txt"><div class="t1">近 30 天被引用 2 次</div><div class="t2">来源：豆包、Kimi</div></div>
+              </div>
+              <div class="row mt12">
+                <button class="btn block" data-toast="已根据 4 个主推 SKU 重新生成对比页">重新生成对比页</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>从未被提及的 SKU</h3><span class="badge bad">22</span></div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="li"><span class="lead n">1</span><div class="txt"><div class="t1">适老化改造方案</div><div class="t2">无内容 · 无投放</div></div><button class="btn sm" data-toast="已创建选题：适老化改造指南">建选题</button></div>
+              <div class="li"><span class="lead n">2</span><div class="txt"><div class="t1">全屋收纳定制</div><div class="t2">无内容 · 无投放</div></div><button class="btn sm" data-toast="已创建选题：小户型收纳方案">建选题</button></div>
+              <div class="li"><span class="lead n">3</span><div class="txt"><div class="t1">阳台封窗与露台改造</div><div class="t2">缺价格 · 需先补参数</div></div><a class="btn sm" href="knowledge.html">补参数</a></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="drawer" id="sku1" role="dialog" aria-label="SKU 详情">
+  <div class="drawer-hd">
+    <div>
+      <h3>整装标准套餐 · 三居</h3>
+      <div class="sub">SKU-HX-ZZ-003 · 整装 · 完整度 100%</div>
+    </div>
+    <button class="drawer-close" data-close-drawer aria-label="关闭">✕</button>
+  </div>
+
+  <div class="mt12">
+    <dl class="kv">
+      <dt>计价方式</dt><dd>按建筑面积 × 单价（套内实测）</dd>
+      <dt>价格带</dt><dd>980–1,350 元/㎡</dd>
+      <dt>面积区间</dt><dd>80–140 ㎡</dd>
+      <dt>包含项</dt><dd>拆改、水电、泥木、油漆、主材安装、保洁</dd>
+      <dt>不含项</dt><dd>家电、窗帘、软装、拆墙加固</dd>
+      <dt>工期</dt><dd>45–60 天</dd>
+      <dt>质保</dt><dd>基础工程 5 年，水电 10 年</dd>
+      <dt>增项规则</dt><dd>以签字确认的变更单为准，单项超 500 元需书面确认</dd>
+    </dl>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="sub" style="margin-bottom:8px">引用该 SKU 的内容（11）</div>
+  <div class="li"><span class="lead b">文</span><div class="txt"><div class="t1">2026 南京老房翻新全流程与预算清单</div><div class="t2">GEOS 86 · 已被引用 3 次</div></div></div>
+  <div class="li"><span class="lead b">文</span><div class="txt"><div class="t1">全包、半包、清包怎么选</div><div class="t2">GEOS 91 · 已被引用 5 次</div></div></div>
+  <div class="li"><span class="lead g">页</span><div class="txt"><div class="t1">官网 · 产品对比页</div><div class="t2">已上线</div></div></div>
+
+  <div class="row mt18">
+    <button class="btn primary" data-toast="已基于该 SKU 创建内容任务">用它生成内容</button>
+    <button class="btn" data-toast="已打开参数编辑">编辑参数</button>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

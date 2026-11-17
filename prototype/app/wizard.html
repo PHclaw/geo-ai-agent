@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>创建品牌档案 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  body { background: var(--bg); }
+  .wz-nav {
+    display: flex; align-items: center; gap: 12px; height: 54px;
+    padding: 0 clamp(18px, 4vw, 40px); border-bottom: 1px solid var(--hair);
+    background: rgba(255,255,255,.7); backdrop-filter: saturate(180%) blur(20px);
+    position: sticky; top: 0; z-index: 30;
+  }
+  .wz-nav .brand { padding: 0; }
+  .wz-nav .meta { margin-left: auto; display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--ink-3); }
+  .wz-nav .meta a:hover { color: var(--ink); }
+
+  .wz-wrap { max-width: 880px; margin: 0 auto; padding: 30px clamp(18px, 4vw, 40px) 80px; }
+
+  /* 步骤条 */
+  .steps-bar {
+    display: flex; align-items: flex-start; gap: 0; margin: 0 0 8px; padding: 0; list-style: none;
+  }
+  .steps-bar li {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px;
+    position: relative; cursor: pointer;
+  }
+  .steps-bar li::before {
+    content: ""; position: absolute; top: 13px; left: -50%; width: 100%; height: 1px;
+    background: var(--hair); z-index: 0;
+  }
+  .steps-bar li:first-child::before { display: none; }
+  .steps-bar li i {
+    position: relative; z-index: 1;
+    width: 27px; height: 27px; border-radius: 50%;
+    display: grid; place-items: center; font-size: 11px; font-style: normal; font-weight: 600;
+    background: #fff; border: 1px solid var(--hair); color: var(--ink-3);
+    transition: all .3s var(--ease);
+  }
+  .steps-bar li span { font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+  .steps-bar li.done i { background: var(--green); border-color: transparent; color: #fff; }
+  .steps-bar li.on i { background: var(--ink); border-color: transparent; color: #fff; box-shadow: 0 0 0 4px rgba(29,29,31,.08); }
+  .steps-bar li.on span { color: var(--ink); font-weight: 500; }
+  .steps-bar li.done span { color: var(--ink-2); }
+
+  .wz-head { margin: 26px 0 16px; }
+  .wz-head .k { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .wz-head h1 { margin: 8px 0 0; font-size: clamp(23px, 3.2vw, 31px); font-weight: 600; letter-spacing: -.028em; line-height: 1.2; }
+  .wz-head p { margin: 9px 0 0; max-width: 560px; font-size: 13px; color: var(--ink-2); line-height: 1.6; }
+
+  .panel { display: none; }
+  .panel.on { display: block; animation: fadeUp .45s var(--ease); }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .form-card {
+    background: #fff; border: 1px solid var(--hair); border-radius: 18px;
+    padding: 26px; margin-top: 22px;
+  }
+  .f { margin-bottom: 18px; }
+  .f:last-child { margin-bottom: 0; }
+  .f label { display: block; margin-bottom: 7px; font-size: 11.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+  .f .hint { margin-top: 6px; font-size: 11px; color: var(--ink-3); letter-spacing: 0; }
+  .f .req { color: var(--red); margin-left: 2px; }
+  .in, .ta {
+    width: 100%; border-radius: 11px; border: 1px solid var(--hair); background: #fbfbfc;
+    padding: 0 13px; height: 43px; font: inherit; font-size: 13.5px; outline: none;
+    transition: all .2s var(--ease); color: var(--ink);
+  }
+  .ta { height: auto; padding: 11px 13px; line-height: 1.6; resize: vertical; }
+  .in:focus, .ta:focus { background: #fff; border-color: rgba(0,113,227,.6); box-shadow: 0 0 0 3px rgba(0,113,227,.12); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  .picks { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pick {
+    height: 31px; padding: 0 13px; border-radius: 980px; border: 1px solid var(--hair);
+    background: #fff; font-size: 12.5px; color: #3a3a3c; cursor: pointer;
+    display: inline-flex; align-items: center; transition: all .2s var(--ease);
+  }
+  .pick:hover { background: #f7f7f8; }
+  .pick.on { background: #1d1d1f; border-color: #1d1d1f; color: #fff; }
+  .pick.add { color: var(--accent); border-style: dashed; }
+
+  .store-card { border: 1px dashed var(--hair); border-radius: 13px; padding: 16px; margin-bottom: 12px; }
+  .store-card .no { font-size: 11px; color: var(--ink-3); margin-bottom: 10px; }
+
+  .wz-foot {
+    display: flex; align-items: center; gap: 12px; margin-top: 22px;
+  }
+  .wz-foot .tip { font-size: 11.5px; color: var(--ink-3); }
+  .wz-foot .btns { margin-left: auto; display: flex; gap: 10px; }
+  .btn-lg { height: 42px; padding: 0 24px; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--hair); background: #fff; }
+  .btn-lg:hover { background: #f7f7f8; }
+  .btn-lg.primary { background: var(--accent); border-color: transparent; color: #fff; box-shadow: 0 6px 18px rgba(0,113,227,.22); }
+  .btn-lg.primary:hover { background: #0077ed; }
+  .btn-lg.ghost { border-color: transparent; background: none; color: var(--ink-2); }
+
+  .summary { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--hair); border: 1px solid var(--hair); border-radius: 13px; overflow: hidden; }
+  .summary div { background: #fff; padding: 14px 16px; }
+  .summary dt { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 5px; }
+  .summary dd { margin: 0; font-size: 13px; color: var(--ink); }
+
+  @media (max-width: 700px) {
+    .steps-bar li span { display: none; }
+    .two { grid-template-columns: 1fr; }
+    .summary { grid-template-columns: 1fr; }
+    .form-card { padding: 20px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wz-nav">
+  <a class="brand" href="dashboard.html"><span class="mark"></span>GEO AI Agent</a>
+  <div class="meta">
+    <span id="saveState">草稿已自动保存</span>
+    <a href="dashboard.html">稍后继续 〉</a>
+  </div>
+</div>
+
+<div class="wz-wrap">
+  <ol class="steps-bar" id="stepsBar">
+    <li class="on" data-step="1"><i>1</i><span>品牌信息</span></li>
+    <li data-step="2"><i>2</i><span>品类与区域</span></li>
+    <li data-step="3"><i>3</i><span>门店</span></li>
+    <li data-step="4"><i>4</i><span>卖点与资质</span></li>
+    <li data-step="5"><i>5</i><span>确认</span></li>
+  </ol>
+
+  <!-- 1 品牌信息 -->
+  <section class="panel on" data-panel="1">
+    <div class="wz-head">
+      <div class="k">Step 1 / 5</div>
+      <h1>先告诉我们，你是谁。</h1>
+      <p>这些信息会写进知识库，成为所有内容的唯一口径。别名很关键——AI 常用别称提到你。</p>
+    </div>
+    <div class="form-card">
+      <div class="f">
+        <label for="brandName">品牌名称<span class="req">*</span></label>
+        <input class="in" id="brandName" placeholder="例如：和序装饰" value="和序装饰" />
+        <div class="hint">建议使用营业执照上的全称，或对外统一使用的品牌名。</div>
+      </div>
+      <div class="f">
+        <label for="alias">别名 / 简称 / 曾用名</label>
+        <input class="in" id="alias" placeholder="多个用逗号分隔，例如：和序、和序空间设计" value="和序、和序空间设计" />
+        <div class="hint">AI 答案里出现这些词也会被统计为提及。</div>
+      </div>
+      <div class="two">
+        <div class="f">
+          <label for="since">成立年份</label>
+          <input class="in" id="since" type="number" placeholder="2012" value="2012" />
+        </div>
+        <div class="f">
+          <label for="city">所在城市<span class="req">*</span></label>
+          <input class="in" id="city" placeholder="南京" value="南京" />
+        </div>
+      </div>
+      <div class="f">
+        <label for="intro">一句话介绍</label>
+        <textarea class="ta" id="intro" rows="3">自 2012 年起服务南京主城，专注住宅整装与老房翻新，目前 4 家直营门店。</textarea>
+        <div class="hint">不超过 60 字，会成为 AI 答案里最可能被引用的那句描述。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 品类与区域 -->
+  <section class="panel" data-panel="2">
+    <div class="wz-head">
+      <div class="k">Step 2 / 5</div>
+      <h1>客户会怎么找你？</h1>
+      <p>选得越准，后面生成的 120 条真实问法就越贴近你的客户。最少选 1 个类目、1 个区域。</p>
+    </div>
+    <div class="form-card">
+      <div class="f">
+        <label>主营类目<span class="req">*</span></label>
+        <div class="picks" data-multi>
+          <span class="pick on">住宅整装</span>
+          <span class="pick on">老房翻新</span>
+          <span class="pick on">局部改造</span>
+          <span class="pick">工装 / 商业空间</span>
+          <span class="pick">软装陈设</span>
+          <span class="pick add">+ 自定义</span>
+        </div>
+      </div>
+      <div class="f">
+        <label>服务区域<span class="req">*</span></label>
+        <div class="picks" data-multi>
+          <span class="pick on">南京 · 主城六区</span>
+          <span class="pick on">南京 · 江宁</span>
+          <span class="pick on">南京 · 浦口</span>
+          <span class="pick">镇江</span>
+          <span class="pick">扬州</span>
+          <span class="pick add">+ 添加区域</span>
+        </div>
+        <div class="hint">地域词会参与诊断（例如「河西附近有哪些装修公司」）。</div>
+      </div>
+      <div class="two">
+        <div class="f">
+          <label for="price">价格带</label>
+          <select class="in" id="price">
+            <option>980–1,350 元/㎡（中端）</option>
+            <option>600–980 元/㎡（性价比）</option>
+            <option>1,350 元/㎡ 以上（高端）</option>
+          </select>
+        </div>
+        <div class="f">
+          <label for="customer">主要客户</label>
+          <select class="in" id="customer">
+            <option>二手房 / 老房业主</option>
+            <option>新房交付业主</option>
+            <option>投资出租房业主</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 门店 -->
+  <section class="panel" data-panel="3">
+    <div class="wz-head">
+      <div class="k">Step 3 / 5</div>
+      <h1>你有几家店，开在哪？</h1>
+      <p>门店信息是 AI 最容易说错的部分（电话、营业时间、是否可预约）。填准了，识别准确率会明显提升。</p>
+    </div>
+    <div class="form-card">
+      <div class="store-card">
+        <div class="no">门店 1</div>
+        <div class="two">
+          <div class="f"><label>门店名称</label><input class="in" value="和序装饰 · 河西旗舰店" /></div>
+          <div class="f"><label>联系电话</label><input class="in" value="025-8654 3210" /></div>
+        </div>
+        <div class="f"><label>详细地址</label><input class="in" value="建邺区江东中路 289 号 3 楼" /></div>
+        <div class="two">
+          <div class="f"><label>营业时间</label><input class="in" value="09:30–19:00（周一至周日）" /></div>
+          <div class="f"><label>特色</label><input class="in" value="含 800㎡ 样板间、免费停车" /></div>
+        </div>
+      </div>
+      <div class="store-card">
+        <div class="no">门店 2</div>
+        <div class="two">
+          <div class="f"><label>门店名称</label><input class="in" value="和序装饰 · 江宁店" /></div>
+          <div class="f"><label>联系电话</label><input class="in" value="025-8622 7788" /></div>
+        </div>
+        <div class="f"><label>详细地址</label><input class="in" value="江宁区双龙大道 1698 号 B 座 2 楼" /></div>
+      </div>
+      <button class="btn" data-toast="已新增一个空白门店卡片">+ 添加门店</button>
+      <div class="hint" style="margin-top:12px">也可以稍后在「知识库 › 门店信息」里补全，门店页会自动生成。</div>
+    </div>
+  </section>
+
+  <!-- 4 卖点与资质 -->
+  <section class="panel" data-panel="4">
+    <div class="wz-head">
+      <div class="k">Step 4 / 5</div>
+      <h1>凭什么选你而不是对手？</h1>
+      <p>写具体的、可验证的差异点。避免「品质第一」「行业领先」这类 AI 不会引用的空话。</p>
+    </div>
+    <div class="form-card">
+      <div class="f">
+        <label>核心卖点（建议 3~5 条）</label>
+        <div class="two" style="gap:10px">
+          <input class="in" value="水电 10 年质保，写进合同" />
+          <input class="in" value="工地全程直播，业主随时可看" />
+          <input class="in" value="报价单逐项列明，增项需书面确认" />
+          <input class="in" value="48 小时内出平面方案" />
+        </div>
+        <div class="hint">每条都应该是「可以拿出来验证」的事实，而不是形容词。</div>
+      </div>
+      <div class="f">
+        <label>资质与背书</label>
+        <div class="picks" data-multi>
+          <span class="pick on">建筑装饰装修二级资质</span>
+          <span class="pick on">ISO 9001</span>
+          <span class="pick">行业协会会员</span>
+          <span class="pick">地方媒体报道</span>
+          <span class="pick add">+ 添加</span>
+        </div>
+        <div class="hint">资质是 AI 判断「权威性」的重要依据，会直接影响首选率。</div>
+      </div>
+      <div class="f">
+        <label>竞品（可自动推荐）</label>
+        <div class="picks" data-multi>
+          <span class="pick on">栖岸设计</span>
+          <span class="pick on">木言空间</span>
+          <span class="pick on">连云装饰</span>
+          <span class="pick add">+ 手动添加</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 确认 -->
+  <section class="panel" data-panel="5">
+    <div class="wz-head">
+      <div class="k">Step 5 / 5</div>
+      <h1>确认一下，就可以开始了。</h1>
+      <p>确认后将自动生成 120 条提问矩阵，并在 8 个 AI 平台开始首次探测，约 30 分钟出报告。</p>
+    </div>
+    <div class="form-card">
+      <dl class="summary">
+        <div><dt>品牌</dt><dd>和序装饰（别名：和序、和序空间设计）</dd></div>
+        <div><dt>城市 / 成立</dt><dd>南京 · 2012 年</dd></div>
+        <div><dt>主营类目</dt><dd>住宅整装、老房翻新、局部改造</dd></div>
+        <div><dt>服务区域</dt><dd>主城六区、江宁、浦口</dd></div>
+        <div><dt>门店</dt><dd>4 家（河西旗舰店、江宁店等）</dd></div>
+        <div><dt>价格带</dt><dd>980–1,350 元/㎡</dd></div>
+        <div><dt>核心卖点</dt><dd>水电 10 年质保、工地直播、增项书面确认</dd></div>
+        <div><dt>竞品</dt><dd>栖岸设计、木言空间、连云装饰</dd></div>
+      </dl>
+
+      <div class="note mt18">
+        <span class="ico">i</span>
+        <div>首次诊断将消耗 2,880 次探测配额（120 条 × 8 平台 × 3 次采样），不占用内容与投放额度。</div>
+      </div>
+
+      <div class="row mt18">
+        <label class="row" style="gap:8px; font-size:12.5px; color:var(--ink-2)">
+          <input type="checkbox" checked /> 允许系统采集公开 AI 回答作为诊断证据
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <div class="wz-foot">
+    <span class="tip" id="stepTip">预计还需 3 分钟</span>
+    <div class="btns">
+      <button class="btn-lg ghost" id="prevBtn" style="display:none">上一步</button>
+      <button class="btn-lg primary" id="nextBtn">继续</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  (function () {
+    var step = 1;
+    var total = 5;
+    var bar = document.getElementById("stepsBar");
+    var nextBtn = document.getElementById("nextBtn");
+    var prevBtn = document.getElementById("prevBtn");
+    var tip = document.getElementById("stepTip");
+    var tips = [
+      "预计还需 3 分钟",
+      "还差门店信息",
+      "建议至少填 1 家门店",
+      "最后一步，确认后开始探测",
+      "确认后约 30 分钟出报告"
+    ];
+
+    function go(n) {
+      n = Math.max(1, Math.min(total, n));
+      step = n;
+      document.querySelectorAll("[data-panel]").forEach(function (p) {
+        p.classList.toggle("on", p.getAttribute("data-panel") === String(n));
+      });
+      Array.prototype.forEach.call(bar.children, function (li) {
+        var i = parseInt(li.getAttribute("data-step"), 10);
+        li.classList.toggle("on", i === n);
+        li.classList.toggle("done", i < n);
+        li.querySelector("i").textContent = i < n ? "✓" : i;
+      });
+      prevBtn.style.display = n === 1 ? "none" : "inline-block";
+      nextBtn.textContent = n === total ? "开始 AI 全景诊断" : "继续";
+      nextBtn.classList.toggle("primary", true);
+      tip.textContent = tips[n - 1];
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      document.getElementById("saveState").textContent = "草稿已自动保存 · 第 " + n + " 步";
+    }
+
+    bar.addEventListener("click", function (e) {
+      var li = e.target.closest("li[data-step]");
+      if (li) go(parseInt(li.getAttribute("data-step"), 10));
+    });
+
+    document.getElementById("nextBtn").addEventListener("click", function () {
+      if (step < total) { go(step + 1); return; }
+      window.geoToast("已创建诊断任务，30 分钟后查看报告");
+      setTimeout(function () { location.href = "diagnosis.html"; }, 900);
+    });
+
+    prevBtn.addEventListener("click", function () { go(step - 1); });
+
+    document.querySelectorAll(".picks[data-multi]").forEach(function (box) {
+      box.addEventListener("click", function (e) {
+        var p = e.target.closest(".pick");
+        if (!p) return;
+        if (p.classList.contains("add")) { window.geoToast("原型演示：暂不支持自定义新增"); return; }
+        p.classList.toggle("on");
+      });
+    });
+
+    go(1);
+  })();
+</script>
+</body>
+</html>

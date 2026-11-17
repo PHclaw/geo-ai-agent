@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>知识库 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .cat { display: flex; flex-direction: column; gap: 2px; }
+  .cat a {
+    display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 10px;
+    border-radius: 9px; font-size: 12.5px; color: #3a3a3c;
+  }
+  .cat a:hover { background: rgba(0,0,0,.04); }
+  .cat a.on { background: #1d1d1f; color: #fff; }
+  .cat a .n { margin-left: auto; font-size: 11px; color: var(--ink-3); }
+  .cat a.on .n { color: rgba(255,255,255,.6); }
+  .conflict { background: rgba(215,0,21,.035); }
+  .conflict td:first-child { box-shadow: inset 2px 0 0 var(--red); }
+</style>
+</head>
+<body data-page="knowledge" data-title="知识库" data-crumb="和序装饰 › 企业资产 › 知识库">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <!-- 概览 -->
+      <section class="card">
+        <div class="row" style="gap:22px; align-items:center">
+          <div class="ring sm" data-v="76"><div class="inner"><b>76</b></div></div>
+          <div style="min-width:220px">
+            <div style="font-size:15px;font-weight:600;letter-spacing:-.02em">知识库完整度 76 分</div>
+            <div class="sub mt6">事实卡是内容的唯一口径来源：AI 只会引用它，不会引用你的口头承诺。</div>
+          </div>
+          <div class="push row">
+            <button class="btn" data-toast="已打开导入：支持 Word / PDF / Excel / 网页链接">批量导入</button>
+            <button class="btn" data-toast="已从官网抓取 14 条事实，待你逐条确认">从官网抓取</button>
+            <button class="btn primary" data-toast="已新建空白事实卡">+ 新建事实卡</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="note bad mt12">
+        <span class="ico">!</span>
+        <div>
+          <b>发现 1 处口径冲突：</b>「人均消费」存在 128 元（2026-08 起）与 138 元（2026-09 起，门店菜单）两个值。
+          冲突未解决前，所有新内容将禁止引用该属性，请确认后保存。
+        </div>
+        <button class="btn sm" style="margin-left:auto" data-toast="已选择 128 元为唯一口径，138 元标记为历史版本">去确认</button>
+      </div>
+
+      <section class="split-l mt18">
+        <!-- 分类 -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>分类</h3><span class="sub">113 条</span></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="cat">
+                <a href="#" class="on">品牌信息 <span class="n">12</span></a>
+                <a href="#">门店信息 <span class="n">18</span></a>
+                <a href="#">产品与服务 <span class="n">46</span></a>
+                <a href="#">常见问题 <span class="n">22</span></a>
+                <a href="#">案例与口碑 <span class="n">9</span></a>
+                <a href="#">资质与背书 <span class="n">6</span></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>待补字段</h3><span class="badge warn">5</span></div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="li"><span class="lead a">缺</span><div class="txt"><div class="t1">停车信息</div><div class="t2">3 家门店均缺失</div></div></div>
+              <div class="li"><span class="lead a">缺</span><div class="txt"><div class="t1">退款 / 质保政策</div><div class="t2">影响口碑型问题</div></div></div>
+              <div class="li"><span class="lead n">缺</span><div class="txt"><div class="t1">施工资质编号</div><div class="t2">权威缺口</div></div></div>
+              <div class="li"><span class="lead n">缺</span><div class="txt"><div class="t1">设计师团队介绍</div><div class="t2">可选</div></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 事实卡 -->
+        <div class="card flush">
+          <div class="card-hd">
+            <div>
+              <h2>事实卡</h2>
+              <div class="sub">每条事实含生效期与来源，过期自动禁止引用</div>
+            </div>
+            <div class="row">
+              <div class="seg"><button class="on">全部</button><button>冲突</button><button>将过期</button></div>
+              <button class="btn sm" data-toast="已导出 113 条事实卡（CSV）">导出</button>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>主体</th><th>属性</th><th>值</th><th>生效期</th><th>来源</th><th>状态</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr class="conflict">
+                  <td class="name">和序装饰</td>
+                  <td>人均消费</td>
+                  <td class="strong">128 元</td>
+                  <td class="num">2026-08-01 起</td>
+                  <td>门店菜单</td>
+                  <td><span class="badge bad">冲突</span></td>
+                  <td class="r"><button class="btn sm" data-toast="请在弹窗中选择唯一口径">解决</button></td>
+                </tr>
+                <tr class="conflict">
+                  <td class="name">和序装饰</td>
+                  <td>人均消费</td>
+                  <td class="strong">138 元</td>
+                  <td class="num">2026-09-01 起</td>
+                  <td>门店菜单（新版）</td>
+                  <td><span class="badge bad">冲突</span></td>
+                  <td class="r"><button class="btn sm" data-toast="请在弹窗中选择唯一口径">解决</button></td>
+                </tr>
+                <tr>
+                  <td class="name">和序装饰</td>
+                  <td>门店数量</td>
+                  <td class="strong">4 家</td>
+                  <td class="num">2026-10-01 起</td>
+                  <td>运营确认</td>
+                  <td><span class="badge ok">生效中</span></td>
+                  <td class="r"><span class="link">编辑</span></td>
+                </tr>
+                <tr>
+                  <td class="name">和序装饰</td>
+                  <td>主营品类</td>
+                  <td>住宅整装 / 老房翻新 / 局部改造</td>
+                  <td class="num">长期有效</td>
+                  <td>官网</td>
+                  <td><span class="badge ok">生效中</span></td>
+                  <td class="r"><span class="link">编辑</span></td>
+                </tr>
+                <tr>
+                  <td class="name">和序装饰</td>
+                  <td>价格区间（整装）</td>
+                  <td class="strong">980–1350 元/㎡</td>
+                  <td class="num">2026-09-15 起</td>
+                  <td>报价单 v3</td>
+                  <td><span class="badge ok">生效中</span></td>
+                  <td class="r"><span class="link">编辑</span></td>
+                </tr>
+                <tr>
+                  <td class="name">和序装饰</td>
+                  <td>工期</td>
+                  <td>45–60 天（100㎡ 三居）</td>
+                  <td class="num">2026-03-01 起</td>
+                  <td>工程部</td>
+                  <td><span class="badge ok">生效中</span></td>
+                  <td class="r"><span class="link">编辑</span></td>
+                </tr>
+                <tr>
+                  <td class="name">河西店</td>
+                  <td>营业时间</td>
+                  <td>09:30–19:00（周一至周日）</td>
+                  <td class="num">2025-06-01 起</td>
+                  <td>门店</td>
+                  <td><span class="badge warn">将过期</span></td>
+                  <td class="r"><span class="link">更新</span></td>
+                </tr>
+                <tr>
+                  <td class="name">和序装饰</td>
+                  <td>服务区域</td>
+                  <td>南京主城六区 + 江宁 / 浦口</td>
+                  <td class="num">长期有效</td>
+                  <td>官网</td>
+                  <td><span class="badge ok">生效中</span></td>
+                  <td class="r"><span class="link">编辑</span></td>
+                </tr>
+                <tr>
+                  <td class="name">和序装饰</td>
+                  <td>质保年限</td>
+                  <td>—</td>
+                  <td class="num">—</td>
+                  <td>—</td>
+                  <td><span class="badge">待补充</span></td>
+                  <td class="r"><button class="btn sm" data-toast="已打开字段编辑">补全</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row" style="padding:12px 18px;border-top:1px solid var(--hair)">
+            <span class="sub">共 113 条事实卡 · 9 条显示</span>
+            <span class="push sub">最后更新：今天 08:40 · 李敏</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 联动说明 -->
+      <section class="grid g3 mt18">
+        <div class="card">
+          <div class="card-hd" style="padding:0"><h3>被谁引用</h3><span class="badge info">38 篇</span></div>
+          <div class="card-bd" style="padding:10px 0 0">
+            <div class="li"><span class="lead b">文</span><div class="txt"><div class="t1">2026 南京老房翻新全流程与预算清单</div><div class="t2">引用 6 条事实</div></div></div>
+            <div class="li"><span class="lead b">文</span><div class="txt"><div class="t1">全包、半包、清包怎么选</div><div class="t2">引用 4 条事实</div></div></div>
+            <div class="li"><span class="lead g">网</span><div class="txt"><div class="t1">官网 · 报价说明页</div><div class="t2">引用 5 条事实</div></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd" style="padding:0"><h3>AI 识别影响</h3><span class="sub">近 7 天</span></div>
+          <div class="card-bd" style="padding:14px 0 0">
+            <div class="stack" style="gap:11px">
+              <div class="meter"><span class="k">价格</span><span class="bar"><i class="green" data-w="96"></i></span><span class="v">96%</span></div>
+              <div class="meter"><span class="k">门店</span><span class="bar"><i class="amber" data-w="62"></i></span><span class="v">62%</span></div>
+              <div class="meter"><span class="k">服务区域</span><span class="bar"><i class="green" data-w="88"></i></span><span class="v">88%</span></div>
+              <div class="meter"><span class="k">质保政策</span><span class="bar"><i class="red" data-w="18"></i></span><span class="v">18%</span></div>
+            </div>
+            <div class="note mt12"><span class="ico">i</span><div>质保政策缺失直接导致「靠谱吗」类问题识别准确率偏低。</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd" style="padding:0"><h3>变更记录</h3><a class="link sub" href="#">全部 ›</a></div>
+          <div class="card-bd" style="padding:10px 0 0">
+            <div class="li"><span class="lead n">今</span><div class="txt"><div class="t1">门店数量 3 → 4</div><div class="t2">今天 08:40 · 李敏</div></div></div>
+            <div class="li"><span class="lead n">昨</span><div class="txt"><div class="t1">新增人均消费 138 元（冲突源）</div><div class="t2">昨天 16:22 · 王强</div></div></div>
+            <div class="li"><span class="lead n">10-20</span><div class="txt"><div class="t1">价格区间 1020 → 980 元/㎡ 起</div><div class="t2">10-20 11:05 · 李敏</div></div></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

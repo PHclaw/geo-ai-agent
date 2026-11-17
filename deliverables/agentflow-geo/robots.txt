@@ -1,0 +1,43 @@
+# AgentFlow robots.txt
+# 放到 frontend/public/robots.txt，构建后位于站点根目录。
+# 注意：nginx 的 location / 会把 404 回退成 index.html，
+# 必须同时加 nginx-geo.conf 里的 exact-match 白名单，否则本文件会被首页替代。
+
+User-agent: *
+Allow: /
+
+# ---- AI 爬虫显式放行（部分 CDN / WAF 默认会拦，显式声明更稳） ----
+User-agent: GPTBot
+Allow: /
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# 字节（豆包 / 抖音）中文场景常用爬虫
+User-agent: Bytespider
+Allow: /
+
+# 阿里通义 / 夸克
+User-agent: QwenBot
+Allow: /
+
+# ---- 不希望被索引的路径 ----
+# 控制台与登录态页面：对 AI 与搜索引擎都无价值，且可能暴露内部结构
+Disallow: /dashboard
+Disallow: /agents
+Disallow: /conversations
+Disallow: /login
+Disallow: /register
+Disallow: /api/
+
+Sitemap: http://159.75.21.251:3000/sitemap.xml

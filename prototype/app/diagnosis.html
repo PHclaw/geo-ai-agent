@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AI 全景诊断 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .pdot { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--ink-3); }
+  .pdot i { width: 7px; height: 7px; border-radius: 2px; display: block; }
+</style>
+</head>
+<body data-page="diagnosis" data-title="AI 全景诊断" data-crumb="和序装饰 › 诊断 › 2026-10-27">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <div class="row" style="margin-bottom:14px">
+        <span class="badge ok"><span class="d"></span>诊断完成</span>
+        <span class="sub">2026-10-27 09:12 · 120 条 Prompt × 8 平台 × 3 次采样 = 2,880 次探测</span>
+        <div class="push row">
+          <button class="btn" data-toast="已导出 PDF 报告（含证据附录，共 18 页）">导出报告</button>
+          <button class="btn primary" data-toast="已创建诊断任务，预计 28 分钟完成">重新诊断</button>
+        </div>
+      </div>
+
+      <!-- 总分 + 子指标 -->
+      <section class="split">
+        <div class="card">
+          <div class="card-hd" style="padding:0">
+            <div>
+              <h2>AI 可见度指数</h2>
+              <div class="sub">加权提及得分 · 决策型问题权重 ×3</div>
+            </div>
+            <div class="seg">
+              <button class="on">全部平台</button>
+              <button>豆包</button>
+              <button>DeepSeek</button>
+            </div>
+          </div>
+
+          <div class="row mt18" style="gap:26px; align-items:center">
+            <div class="ring" data-v="34">
+              <div class="inner"><b>34</b><span>AVI / 100</span></div>
+            </div>
+            <div style="flex:1; min-width:200px">
+              <div class="stack" style="gap:14px">
+                <div>
+                  <div class="row" style="gap:6px"><span class="k muted" style="font-size:12px">提及率（可见度）</span><span class="push num strong" style="font-weight:600">42%</span></div>
+                  <div class="bar mt6"><i data-w="42"></i></div>
+                </div>
+                <div>
+                  <div class="row" style="gap:6px"><span class="k muted" style="font-size:12px">品牌识别准确率</span><span class="push num" style="font-weight:600">92%</span></div>
+                  <div class="bar mt6"><i class="green" data-w="92"></i></div>
+                </div>
+                <div>
+                  <div class="row" style="gap:6px"><span class="k muted" style="font-size:12px">首选推荐率（前 3）</span><span class="push num" style="font-weight:600">10%</span></div>
+                  <div class="bar mt6"><i class="amber" data-w="10"></i></div>
+                </div>
+                <div>
+                  <div class="row" style="gap:6px"><span class="k muted" style="font-size:12px">答案份额 SoV</span><span class="push num" style="font-weight:600">21.3%</span></div>
+                  <div class="bar mt6"><i data-w="21"></i></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="sub" style="margin-bottom:10px">按意图分层（决策型最弱，是当前最大机会）</div>
+          <div class="grid g3" style="gap:10px 20px">
+            <div class="meter"><span class="k">认知型</span><span class="bar"><i data-w="41"></i></span><span class="v">41</span></div>
+            <div class="meter"><span class="k">比较型</span><span class="bar"><i data-w="33"></i></span><span class="v">33</span></div>
+            <div class="meter"><span class="k">决策型</span><span class="bar"><i class="red" data-w="12"></i></span><span class="v">12</span></div>
+            <div class="meter"><span class="k">口碑型</span><span class="bar"><i data-w="38"></i></span><span class="v">38</span></div>
+            <div class="meter"><span class="k">本地型</span><span class="bar"><i data-w="46"></i></span><span class="v">46</span></div>
+            <div class="meter"><span class="k">竞品均值</span><span class="bar"><i class="grey" data-w="61"></i></span><span class="v">61</span></div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>差距归因</h3>
+              <span class="sub">4 类 · 按影响排序</span>
+            </div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="li">
+                <span class="lead a">信</span>
+                <div class="txt">
+                  <div class="t1">信源缺口 · 影响最大</div>
+                  <div class="t2">竞品被引用的 12 个本地门户中，你方覆盖 0 个</div>
+                </div>
+                <a class="btn sm" href="media.html">补投</a>
+              </div>
+              <div class="li">
+                <span class="lead a">内</span>
+                <div class="txt">
+                  <div class="t1">内容缺口</div>
+                  <div class="t2">决策型 30 条问题中，18 条无任何可引用内容</div>
+                </div>
+                <a class="btn sm" href="content.html">生产</a>
+              </div>
+              <div class="li">
+                <span class="lead b">口</span>
+                <div class="txt">
+                  <div class="t1">口径问题</div>
+                  <div class="t2">人均价 / 门店数在 3 个平台描述不一致</div>
+                </div>
+                <a class="btn sm" href="knowledge.html">修正</a>
+              </div>
+              <div class="li">
+                <span class="lead n">权</span>
+                <div class="txt">
+                  <div class="t1">权威缺口</div>
+                  <div class="t2">缺行业资质与奖项背书，AI 不倾向首推</div>
+                </div>
+                <span class="badge">V1.5</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>30 天增长计划</h3>
+              <span class="badge info">已生成</span>
+            </div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="check"><span class="dot">1</span><div class="txt"><b>修正 3 项口径</b><div class="code">人均价、门店数、营业时间 → 知识库</div></div></div>
+              <div class="check"><span class="dot">2</span><div class="txt"><b>生产 12 篇决策型内容</b><div class="code">报价、对比、避坑类，GEOS ≥ 70</div></div></div>
+              <div class="check"><span class="dot">3</span><div class="txt"><b>补投 8 家本地高权重信源</b><div class="code">预算建议 ¥8,600，覆盖 AIW ≥ 60 域名</div></div></div>
+              <div class="check warn"><span class="dot">4</span><div class="txt"><b>更新官网门店页</b><div class="code">4 家门店 NAP 一致性</div></div></div>
+              <div class="row mt12">
+                <button class="btn primary block" data-toast="已把 4 项任务下发到内容中心与媒体中心">一键执行计划</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 分平台 -->
+      <section class="card flush mt18">
+        <div class="card-hd">
+          <div>
+            <h2>分平台表现</h2>
+            <div class="sub">同一批 Prompt 在不同 AI 平台的差异，决定投放优先级</div>
+          </div>
+          <div class="row">
+            <span class="badge ok"><span class="d"></span>8 个平台在线</span>
+            <span class="badge">数据缺失 0</span>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>平台</th><th>AVI</th><th>提及率</th><th>首选率</th><th>识别准确率</th><th>样本</th><th>趋势</th><th>判断</th></tr>
+            </thead>
+            <tbody>
+              <tr><td class="name">豆包</td><td class="strong">41</td><td class="num">49%</td><td class="num">14%</td><td class="num">94%</td><td class="num">360</td><td><span class="delta up">▲ 6</span></td><td><span class="badge ok">主战场</span></td></tr>
+              <tr><td class="name">DeepSeek</td><td class="strong">36</td><td class="num">44%</td><td class="num">11%</td><td class="num">91%</td><td class="num">360</td><td><span class="delta up">▲ 4</span></td><td><span class="badge ok">主战场</span></td></tr>
+              <tr><td class="name">腾讯元宝</td><td class="strong">33</td><td class="num">40%</td><td class="num">9%</td><td class="num">78%</td><td class="num">360</td><td><span class="delta up">▲ 2</span></td><td><span class="badge warn">口径待修</span></td></tr>
+              <tr><td class="name">Kimi</td><td class="strong">28</td><td class="num">35%</td><td class="num">8%</td><td class="num">95%</td><td class="num">360</td><td><span class="delta flat">— 0</span></td><td><span class="badge">稳定</span></td></tr>
+              <tr><td class="name">通义 / 夸克</td><td class="strong">22</td><td class="num">28%</td><td class="num">5%</td><td class="num">88%</td><td class="num">360</td><td><span class="delta up">▲ 3</span></td><td><span class="badge info">可提升</span></td></tr>
+              <tr><td class="name">文心 / 百度 AI</td><td class="strong">19</td><td class="num">24%</td><td class="num">4%</td><td class="num">86%</td><td class="num">360</td><td><span class="delta down">▼ 2</span></td><td><span class="badge bad">需关注</span></td></tr>
+              <tr><td class="name">智谱清言</td><td class="strong">15</td><td class="num">19%</td><td class="num">2%</td><td class="num">90%</td><td class="num">360</td><td><span class="delta flat">— 0</span></td><td><span class="badge">低优先</span></td></tr>
+              <tr><td class="name">秘塔 AI 搜索</td><td class="strong">12</td><td class="num">16%</td><td class="num">1%</td><td class="num">82%</td><td class="num">360</td><td><span class="delta down">▼ 1</span></td><td><span class="badge">低优先</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Prompt 列表 -->
+      <section class="card flush mt18">
+        <div class="card-hd">
+          <div>
+            <h2>提问矩阵</h2>
+            <div class="sub">120 条 Prompt · 点击任意行查看 AI 回答原文与引用证据</div>
+          </div>
+          <div class="row">
+            <div class="seg">
+              <button class="on">全部</button>
+              <button>决策型</button>
+              <button>未提及</button>
+            </div>
+            <button class="btn sm" data-toast="已打开 Prompt 编辑器（支持批量导入 CSV）">编辑矩阵</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr><th>问题</th><th>意图</th><th>权重</th><th>平台命中</th><th>得分</th><th>状态</th></tr>
+            </thead>
+            <tbody>
+              <tr class="clickable" data-row-drawer="#pd1">
+                <td class="name">南京老房翻新大概要多少钱？</td>
+                <td><span class="badge info">决策</span></td>
+                <td class="num">3</td>
+                <td>
+                  <div class="row tight">
+                    <span class="pdot"><i style="background:#0071e3"></i>豆</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>DS</span>
+                    <span class="pdot"><i style="background:#c7c7cc"></i>K</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>元</span>
+                  </div>
+                </td>
+                <td class="strong">0.58</td>
+                <td><span class="badge ok">前 3</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#pd1">
+                <td class="name">南京装修公司哪家口碑比较好？</td>
+                <td><span class="badge info">决策</span></td>
+                <td class="num">3</td>
+                <td>
+                  <div class="row tight">
+                    <span class="pdot"><i style="background:#c7c7cc"></i>豆</span>
+                    <span class="pdot"><i style="background:#0071e3"></i>DS</span>
+                    <span class="pdot"><i style="background:#c7c7cc"></i>K</span>
+                    <span class="pdot"><i style="background:#c7c7cc"></i>元</span>
+                  </div>
+                </td>
+                <td class="strong">0.13</td>
+                <td><span class="badge bad">未上榜</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#pd1">
+                <td class="name">全包和半包到底差在哪，怎么选？</td>
+                <td><span class="badge purple">比较</span></td>
+                <td class="num">2</td>
+                <td>
+                  <div class="row tight">
+                    <span class="pdot"><i style="background:#1d9d5a"></i>豆</span>
+                    <span class="pdot"><i style="background:#0071e3"></i>DS</span>
+                    <span class="pdot"><i style="background:#0071e3"></i>K</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>元</span>
+                  </div>
+                </td>
+                <td class="strong">0.71</td>
+                <td><span class="badge ok">前 3</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#pd1">
+                <td class="name">河西附近有哪些靠谱的装修公司？</td>
+                <td><span class="badge warn">本地</span></td>
+                <td class="num">3</td>
+                <td>
+                  <div class="row tight">
+                    <span class="pdot"><i style="background:#0071e3"></i>豆</span>
+                    <span class="pdot"><i style="background:#0071e3"></i>DS</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>K</span>
+                    <span class="pdot"><i style="background:#0071e3"></i>元</span>
+                  </div>
+                </td>
+                <td class="strong">0.62</td>
+                <td><span class="badge ok">前 5</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#pd1">
+                <td class="name">和序装饰靠谱吗，有没有坑？</td>
+                <td><span class="badge">口碑</span></td>
+                <td class="num">3</td>
+                <td>
+                  <div class="row tight">
+                    <span class="pdot"><i style="background:#0071e3"></i>豆</span>
+                    <span class="pdot"><i style="background:#c7c7cc"></i>DS</span>
+                    <span class="pdot"><i style="background:#0071e3"></i>K</span>
+                    <span class="pdot"><i style="background:#c7c7cc"></i>元</span>
+                  </div>
+                </td>
+                <td class="strong">0.44</td>
+                <td><span class="badge warn">信息过时</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#pd1">
+                <td class="name">装修一般需要多长时间？</td>
+                <td><span class="badge">认知</span></td>
+                <td class="num">1</td>
+                <td>
+                  <div class="row tight">
+                    <span class="pdot"><i style="background:#1d9d5a"></i>豆</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>DS</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>K</span>
+                    <span class="pdot"><i style="background:#1d9d5a"></i>元</span>
+                  </div>
+                </td>
+                <td class="strong">0.90</td>
+                <td><span class="badge ok">首位</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="row" style="padding:12px 18px; border-top:1px solid var(--hair)">
+          <span class="sub">图例：</span>
+          <span class="pdot"><i style="background:#1d9d5a"></i>前 3 推荐</span>
+          <span class="pdot"><i style="background:#0071e3"></i>提及未进前 3</span>
+          <span class="pdot"><i style="background:#c7c7cc"></i>未提及</span>
+          <span class="push sub">共 120 条 · 显示 6 条</span>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="drawer" id="pd1" role="dialog" aria-label="Prompt 证据">
+  <div class="drawer-hd">
+    <div>
+      <h3>南京老房翻新大概要多少钱？</h3>
+      <div class="sub">决策型 · 权重 3 · 豆包 2026-10-27 09:12</div>
+    </div>
+    <button class="drawer-close" data-close-drawer aria-label="关闭">✕</button>
+  </div>
+
+  <div class="row mt12">
+    <span class="badge ok">第 2 位</span>
+    <span class="badge info">得分 0.58</span>
+    <span class="badge">采样 3/3 稳定</span>
+  </div>
+
+  <div class="quote-block">
+    南京老房翻新的费用主要取决于拆改量与主材档次。<span class="hl">和序装饰</span>的整装报价约为
+    <span class="hl">硬装 980–1350 元/㎡</span>，100㎡ 三居室整体预算在 <span class="hl">12–18 万元</span>，
+    工期 45–60 天。
+    <br /><br />
+    需要注意的三项隐性成本：拆墙与垃圾清运（约 60–90 元/㎡）、水电全改（约 120–180 元/㎡）、
+    老房门窗更换（按樘计价）。
+  </div>
+
+  <div class="mt18">
+    <div class="sub" style="margin-bottom:8px">引用信源（2）</div>
+    <div class="li"><span class="lead b">网</span><div class="txt"><div class="t1">njhouse.com · 2026 老房翻新预算清单</div><div class="t2">2026-10-24 · 主要来源</div></div><span class="badge ok">已收录</span></div>
+    <div class="li"><span class="lead g">站</span><div class="txt"><div class="t1">和序装饰官网 · 报价说明</div><div class="t2">2026-10-11 · 次要来源</div></div><span class="badge ok">已收录</span></div>
+  </div>
+
+  <div class="mt18">
+    <div class="sub" style="margin-bottom:8px">属性核对</div>
+    <dl class="kv">
+      <dt>价格区间</dt><dd>正确 · 与事实卡一致</dd>
+      <dt>工期</dt><dd>正确</dd>
+      <dt>门店数量</dt><dd style="color:var(--red)">错误 · 答案称 3 家，实际 4 家</dd>
+      <dt>服务区域</dt><dd>正确 · 南京主城 + 江宁</dd>
+    </dl>
+  </div>
+
+  <div class="row mt18">
+    <button class="btn primary" data-toast="已创建补正任务：更新门店数并补投一篇门店信息稿">生成补正任务</button>
+    <button class="btn" data-toast="已加入竞品与信源监测">加入监测</button>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

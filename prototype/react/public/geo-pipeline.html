@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>GEO AI Agent · 数据闭环</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 20px 30px; background: #fafbfc; color: #1d1d1f;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .page { max-width: 1160px; margin: 0 auto; }
+  h1 { margin: 0; text-align: center; font-size: 18px; font-weight: 650; letter-spacing: -.02em; }
+  .sub { margin: 5px 0 20px; text-align: center; font-size: 10.5px; color: #86868b; }
+
+  .flow { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .step {
+    background: #fff; border: 1px solid; border-radius: 12px; padding: 12px 11px 11px;
+    position: relative; min-height: 176px;
+  }
+  .step:not(:last-child)::after {
+    content: "→"; position: absolute; right: -13px; top: 46%; z-index: 2;
+    font-size: 16px; font-weight: 700; color: #9aa0ac; background: #fafbfc; padding: 1px 0;
+  }
+  .s1 { border-color: #cddcf3; background: #f7faff; }
+  .s2 { border-color: #cbe7d3; background: #f7fcf8; }
+  .s3 { border-color: #ded2f2; background: #fbf8ff; }
+  .s4 { border-color: #f0dcb8; background: #fffaf0; }
+  .s5 { border-color: #f2cdda; background: #fff7fa; }
+
+  .no { font-size: 8.5px; letter-spacing: .12em; font-weight: 700; opacity: .65; }
+  .s1 .no { color: #3457b8; } .s2 .no { color: #247a4d; } .s3 .no { color: #7054b8; }
+  .s4 .no { color: #a8741e; } .s5 .no { color: #b8375f; }
+  .step b { display: block; font-size: 12.5px; margin: 3px 0 7px; color: #232326; }
+  .step ul { margin: 0; padding-left: 14px; }
+  .step li { font-size: 9.3px; line-height: 1.7; color: #6e6e75; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 9px; }
+  .tag { border-radius: 999px; padding: 2px 7px; font-size: 8.2px; font-weight: 650; }
+  .t-real { background: #e6f5eb; color: #247a4d; }
+  .t-manual { background: #eaf0ff; color: #3457b8; }
+  .t-mock { background: #f0f0f2; color: #7c7c84; }
+
+  .reflow {
+    margin-top: 16px; border: 1px dashed #d9d9e0; border-radius: 11px; background: #fff;
+    padding: 10px 14px; text-align: center; font-size: 10px; color: #6e6e75;
+  }
+  .reflow b { color: #a35f12; font-weight: 650; }
+  .arrow-up { color: #d99b3c; letter-spacing: 4px; font-size: 12px; margin-bottom: 4px; }
+
+  .legend { display: flex; justify-content: center; gap: 24px; margin-top: 15px; font-size: 9px; color: #86868b; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+  .d1 { background: #8fd0a8; } .d2 { background: #9fb8ee; } .d3 { background: #cfcfd5; }
+  .caption { text-align: center; font-size: 9px; color: #9a9aa0; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>GEO AI Agent · 五步数据闭环</h1>
+  <div class="sub">诊断 → 资产 → 内容 → 分发 → 复盘 · 每一步都标注数据来源，模拟结果不冒充实测</div>
+
+  <div class="flow">
+    <section class="step s1">
+      <div class="no">STEP 01 · 诊断</div>
+      <b>AI 全景诊断</b>
+      <ul>
+        <li>6 平台探测 / 答案解析</li>
+        <li>AVI · BRA · SoV 双轨指标</li>
+        <li>C 端取证（A 级证据）</li>
+        <li>四象限归因与缺口清单</li>
+      </ul>
+      <div class="tags"><span class="tag t-manual">人工取证</span><span class="tag t-mock">mock 探测</span></div>
+    </section>
+
+    <section class="step s2">
+      <div class="no">STEP 02 · 资产</div>
+      <b>知识资产建库</b>
+      <ul>
+        <li>文档上传 / 切片 / BM25</li>
+        <li>事实卡冲突与唯一口径</li>
+        <li>产品库 / 提问矩阵</li>
+        <li>官网 9 项体检与 GEO 资产</li>
+      </ul>
+      <div class="tags"><span class="tag t-real">真实落库</span><span class="tag t-manual">人工确认</span></div>
+    </section>
+
+    <section class="step s3">
+      <div class="no">STEP 03 · 内容</div>
+      <b>可引用内容生产</b>
+      <ul>
+        <li>模板渲染（按提问意图）</li>
+        <li>pi 智能体 SSE 长文写作</li>
+        <li>事实回比 / 合规拦截 / 配图</li>
+        <li>GEOS 六维评分与 HTML 导出</li>
+      </ul>
+      <div class="tags"><span class="tag t-real">真实生成</span></div>
+    </section>
+
+    <section class="step s4">
+      <div class="no">STEP 04 · 分发</div>
+      <b>发布与链接台账</b>
+      <ul>
+        <li>媒体库 / 订单 / 人工代投</li>
+        <li>发布排期（养号 + 穿插）</li>
+        <li>回填真实发布 URL</li>
+        <li>链接存活 HTTP 巡检</li>
+      </ul>
+      <div class="tags"><span class="tag t-manual">人工回填</span><span class="tag t-real">真抓真判</span></div>
+    </section>
+
+    <section class="step s5">
+      <div class="no">STEP 05 · 复盘</div>
+      <b>效果监测与复盘</b>
+      <ul>
+        <li>AVI 趋势 / 竞品对比</li>
+        <li>SEO 曝光率与关键词位次</li>
+        <li>收录 / 展现 / 点击 / CTR</li>
+        <li>被引用次数（域名匹配）</li>
+      </ul>
+      <div class="tags"><span class="tag t-manual">人工位次 / CSV</span><span class="tag t-mock">排名待 Key</span></div>
+    </section>
+  </div>
+
+  <div class="reflow">
+    <div class="arrow-up">↖ &nbsp; ↑ &nbsp; ↗</div>
+    <b>回流</b>：复盘结果修正事实卡口径 → 重新生成内容 → 更新链接台账与排期，形成下一轮闭环。<br />
+    模拟样本单列不计入效果；口径切换时不计算涨跌；养号知识内容永远不计入 AI 曝光指标。
+  </div>
+
+  <div class="legend">
+    <span><i class="dot d1"></i>真实执行（无需 Key）</span>
+    <span><i class="dot d2"></i>人工录入（可核验）</span>
+    <span><i class="dot d3"></i>模拟 / 未检测（待 Key）</span>
+  </div>
+  <div class="caption">图 1　GEO AI Agent 五步闭环与数据来源口径（单机演示态：6 个模型 Key 与搜索 Key 均未配置）</div>
+</div>
+</body>
+</html>

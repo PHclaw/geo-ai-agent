@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>媒体分发 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .aiw { display: inline-flex; align-items: center; gap: 5px; }
+  .aiw .bar { width: 42px; }
+  tr.picked { background: rgba(0, 113, 227, 0.045); }
+  tr.picked td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+  .pick-list .li { padding: 9px 0; }
+</style>
+</head>
+<body data-page="media" data-title="媒体分发" data-crumb="和序装饰 › 分发 › 媒体与投放">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <section class="grid g4">
+        <div class="kpi">
+          <div class="label">可用媒体</div>
+          <div class="val">25,432<small>家</small></div>
+          <div class="foot"><span class="delta up">▲ 128</span><span class="sub">本月新增</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">已覆盖 AI 信源</div>
+          <div class="val">6<small>个域名</small></div>
+          <div class="foot"><span class="delta up">▲ 2</span><span class="sub">竞品覆盖 18 个</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">待补高权重信源</div>
+          <div class="val">8<small>个</small></div>
+          <div class="foot"><span class="delta down">优先处理</span><span class="sub">AIW ≥ 60</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">本月投放</div>
+          <div class="val">12<small>家媒体</small></div>
+          <div class="foot"><span class="delta up">▲ 收录 11</span><span class="sub">被引用 4</span></div>
+        </div>
+      </section>
+
+      <div class="row mt18">
+        <span class="sub">投放目标</span>
+        <div class="seg">
+          <button class="on">提升可见度</button>
+          <button>抢占本地</button>
+          <button>压制负面</button>
+        </div>
+        <span class="badge info">按 AI 引用概率排序</span>
+        <span class="push sub">建议预算 ¥8,600 · 覆盖 9 个未触及信源</span>
+      </div>
+
+      <section class="split-l mt12">
+        <!-- 筛选 -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>筛选</h3><a class="link sub" href="#">重置 ›</a></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="sub" style="margin-bottom:7px">类型</div>
+              <div class="row tight" style="margin-bottom:12px">
+                <span class="chip on">地方官媒</span>
+                <span class="chip">行业大 V</span>
+                <span class="chip">本地生活</span>
+                <span class="chip">央媒</span>
+              </div>
+              <div class="sub" style="margin-bottom:7px">地域</div>
+              <div class="row tight" style="margin-bottom:12px">
+                <span class="chip on">南京</span>
+                <span class="chip">江苏省</span>
+                <span class="chip">全国</span>
+              </div>
+              <div class="sub" style="margin-bottom:7px">行业</div>
+              <div class="row tight" style="margin-bottom:12px">
+                <span class="chip on">家居 / 装修</span>
+                <span class="chip">房产</span>
+                <span class="chip">本地生活</span>
+              </div>
+              <div class="sub" style="margin-bottom:7px">AIW 权重</div>
+              <div class="row tight">
+                <span class="chip">全部</span>
+                <span class="chip on">≥ 60</span>
+                <span class="chip">≥ 80</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>AIW 是什么</h3></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="sub">
+                基于全平台探测统计每个域名被 AI 引用的频次与「是否作为主要来源」，
+                归一化为 0–100 分。分数越高，发在这里越容易被 AI 引用。
+              </div>
+              <div class="divider"></div>
+              <div class="row" style="justify-content:space-between"><span class="sub">样本量</span><span class="badge">≥ 30 次</span></div>
+              <div class="row mt6" style="justify-content:space-between"><span class="sub">更新频率</span><span class="badge">每周</span></div>
+              <div class="row mt6" style="justify-content:space-between"><span class="sub">置信度</span><span class="badge ok">高</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 媒体列表 + 方案 -->
+        <div class="stack">
+          <div class="card flush">
+            <div class="card-hd">
+              <div>
+                <h2>推荐媒体</h2>
+                <div class="sub">已按「AIW × 地域匹配 ÷ 价格」排序 · 点击加入方案</div>
+              </div>
+              <div class="row">
+                <span class="badge ok"><span class="d"></span>28 家匹配</span>
+                <button class="btn sm" data-toast="已按 AIW 从高到低重排">排序</button>
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl" id="mediaTable">
+                <thead>
+                  <tr><th>媒体</th><th>类型</th><th>AIW</th><th>出稿</th><th class="r">价格</th><th class="r">操作</th></tr>
+                </thead>
+                <tbody>
+                  <tr data-price="1800" data-aiw="92">
+                    <td class="name">南京日报 · 城市生活 <span class="badge info" style="margin-left:6px">竞品已覆盖</span></td>
+                    <td><span class="badge">地方官媒</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="92"></i></span><span class="num">92</span></div></td>
+                    <td>T+1</td>
+                    <td class="r strong">¥1,800</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="1200" data-aiw="88">
+                    <td class="name">扬子晚报网 · 家居</td>
+                    <td><span class="badge">地方官媒</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="88"></i></span><span class="num">88</span></div></td>
+                    <td>T+1</td>
+                    <td class="r strong">¥1,200</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="2600" data-aiw="85">
+                    <td class="name">新华网江苏 · 民生 <span class="badge warn" style="margin-left:6px">审核严</span></td>
+                    <td><span class="badge">央媒</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="85"></i></span><span class="num">85</span></div></td>
+                    <td>T+3</td>
+                    <td class="r strong">¥2,600</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="900" data-aiw="79">
+                    <td class="name">龙虎网 · 南京生活</td>
+                    <td><span class="badge">地方官媒</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="79"></i></span><span class="num">79</span></div></td>
+                    <td>T+1</td>
+                    <td class="r strong">¥900</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="1500" data-aiw="76">
+                    <td class="name">现代快报 · 房产家居</td>
+                    <td><span class="badge">地方官媒</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="76"></i></span><span class="num">76</span></div></td>
+                    <td>T+2</td>
+                    <td class="r strong">¥1,500</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="2200" data-aiw="71">
+                    <td class="name">知乎 · 家居研究所（垂类大 V）</td>
+                    <td><span class="badge purple">行业大 V</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="71"></i></span><span class="num">71</span></div></td>
+                    <td>T+2</td>
+                    <td class="r strong">¥2,200</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="800" data-aiw="64">
+                    <td class="name">小红书 · 南京家居君（KOC）</td>
+                    <td><span class="badge purple">行业大 V</span></td>
+                    <td><div class="aiw"><span class="bar"><i data-w="64"></i></span><span class="num">64</span></div></td>
+                    <td>T+1</td>
+                    <td class="r strong">¥800</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                  <tr data-price="600" data-aiw="58">
+                    <td class="name">大众点评 · 南京装修攻略（本地生活）</td>
+                    <td><span class="badge">本地生活</span></td>
+                    <td><div class="aiw"><span class="bar"><i class="amber" data-w="58"></i></span><span class="num">58</span></div></td>
+                    <td>T+1</td>
+                    <td class="r strong">¥600</td>
+                    <td class="r"><button class="btn sm add">加入</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="row" style="padding:12px 18px;border-top:1px solid var(--hair)">
+              <span class="sub">显示 8 / 28 · 价格为含撰改与发布的打包价</span>
+              <span class="push sub">履约准时率 96%</span>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd">
+              <div>
+                <h2>投放方案</h2>
+                <div class="sub">基于 8 个未覆盖高权重信源自动生成</div>
+              </div>
+              <span class="badge info">脉冲式</span>
+            </div>
+            <div class="card-bd pick-list" style="padding-top:6px">
+              <div id="pickedList">
+                <div class="sub" style="padding:8px 0; color:var(--ink-3)">尚未选择媒体，点击上方「加入」开始组包</div>
+              </div>
+              <div class="divider"></div>
+              <div class="row" style="justify-content:space-between">
+                <span class="sub">已选媒体</span><span class="num" style="font-weight:600" id="sumCount">0 家</span>
+              </div>
+              <div class="row mt6" style="justify-content:space-between">
+                <span class="sub">覆盖 AIW 均值</span><span class="num" style="font-weight:600" id="sumAiw">—</span>
+              </div>
+              <div class="row mt6" style="justify-content:space-between">
+                <span class="sub">预算合计</span><span class="num" style="font-weight:600;font-size:16px" id="sumPrice">¥0</span>
+              </div>
+              <div class="row mt12" style="gap:8px">
+                <span class="badge ok">预计收录 92%</span>
+                <span class="badge info">预计引用 +2~4 次</span>
+              </div>
+              <button class="btn primary block mt12" data-toast="已生成订单，等待媒体接单（可在履约中查看）">提交订单</button>
+              <div class="sub mt6" style="text-align:center">内容将由系统自动匹配媒体属性版本</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 履约 -->
+      <section class="card flush mt18">
+        <div class="card-hd">
+          <div><h2>履约与回链</h2><div class="sub">发布链接自动回传，未回链会自动降级供应商评分</div></div>
+          <button class="btn sm" data-toast="已导出本月投放台账">导出台账</button>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>稿件</th><th>媒体</th><th>状态</th><th>发布时间</th><th>链接</th><th>收录</th><th>AI 引用</th></tr></thead>
+            <tbody>
+              <tr><td class="name">南京装修公司怎么选（5 个指标）</td><td>南京日报 · 城市生活</td><td><span class="badge ok">已完成</span></td><td class="num">10-24</td><td><span class="link">查看</span></td><td><span class="badge ok">已收录</span></td><td><span class="badge info">3 次</span></td></tr>
+              <tr><td class="name">全包、半包、清包怎么选</td><td>知乎 · 家居研究所</td><td><span class="badge ok">已完成</span></td><td class="num">10-22</td><td><span class="link">查看</span></td><td><span class="badge ok">已收录</span></td><td><span class="badge info">5 次</span></td></tr>
+              <tr><td class="name">河西片区三居室改造实录</td><td>小红书 · 南京家居君</td><td><span class="badge warn">待回链</span></td><td class="num">10-20</td><td><span class="dim">—</span></td><td><span class="badge warn">未收录</span></td><td><span class="badge">—</span></td></tr>
+              <tr><td class="name">装修合同里的 7 个隐藏费用</td><td>扬子晚报网 · 家居</td><td><span class="badge ok">已完成</span></td><td class="num">10-18</td><td><span class="link">查看</span></td><td><span class="badge ok">已收录</span></td><td><span class="badge info">1 次</span></td></tr>
+              <tr><td class="name">2026 南京老房翻新全流程</td><td>龙虎网 · 南京生活</td><td><span class="badge">已送审</span></td><td class="dim">—</td><td><span class="dim">—</span></td><td><span class="dim">—</span></td><td><span class="badge">—</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  (function () {
+    var picked = [];
+    var tbody = document.querySelector("#mediaTable tbody");
+    var listEl = document.getElementById("pickedList");
+    var elCount = document.getElementById("sumCount");
+    var elAiw = document.getElementById("sumAiw");
+    var elPrice = document.getElementById("sumPrice");
+
+    function money(n) { return "¥" + n.toLocaleString("zh-CN"); }
+
+    function render() {
+      if (!picked.length) {
+        listEl.innerHTML = '<div class="sub" style="padding:8px 0;color:var(--ink-3)">尚未选择媒体，点击上方「加入」开始组包</div>';
+        elCount.textContent = "0 家";
+        elAiw.textContent = "—";
+        elPrice.textContent = "¥0";
+        return;
+      }
+      listEl.innerHTML = picked.map(function (p) {
+        return '<div class="li"><span class="lead b">媒</span><div class="txt">' +
+          '<div class="t1">' + p.name + '</div>' +
+          '<div class="t2">AIW ' + p.aiw + ' · ' + money(p.price) + '</div></div>' +
+          '<button class="btn sm" data-remove="' + p.id + '">移除</button></div>';
+      }).join("");
+      var sum = picked.reduce(function (a, p) { return a + p.price; }, 0);
+      var avg = Math.round(picked.reduce(function (a, p) { return a + p.aiw; }, 0) / picked.length);
+      elCount.textContent = picked.length + " 家";
+      elAiw.textContent = avg;
+      elPrice.textContent = money(sum);
+    }
+
+    tbody.addEventListener("click", function (e) {
+      var btn = e.target.closest(".add");
+      if (!btn) return;
+      var tr = btn.closest("tr");
+      var name = tr.querySelector(".name").childNodes[0].textContent.trim();
+      var price = parseInt(tr.getAttribute("data-price"), 10);
+      var aiw = parseInt(tr.getAttribute("data-aiw"), 10);
+      var id = price + "-" + aiw + "-" + name.length;
+
+      var idx = picked.findIndex(function (p) { return p.id === id; });
+      if (idx > -1) {
+        picked.splice(idx, 1);
+        tr.classList.remove("picked");
+        btn.textContent = "加入";
+        btn.classList.remove("primary");
+      } else {
+        picked.push({ id: id, name: name, price: price, aiw: aiw });
+        tr.classList.add("picked");
+        btn.textContent = "已加入";
+        btn.classList.add("primary");
+      }
+      render();
+    });
+
+    listEl.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-remove]");
+      if (!b) return;
+      var id = b.getAttribute("data-remove");
+      picked = picked.filter(function (p) { return p.id !== id; });
+      Array.prototype.forEach.call(tbody.querySelectorAll("tr"), function (tr) {
+        var name = tr.querySelector(".name").childNodes[0].textContent.trim();
+        var price = parseInt(tr.getAttribute("data-price"), 10);
+        var aiw = parseInt(tr.getAttribute("data-aiw"), 10);
+        var rid = price + "-" + aiw + "-" + name.length;
+        if (rid === id) {
+          tr.classList.remove("picked");
+          var btn = tr.querySelector(".add");
+          btn.textContent = "加入";
+          btn.classList.remove("primary");
+        }
+      });
+      render();
+    });
+  })();
+</script>
+</body>
+</html>

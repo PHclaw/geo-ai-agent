@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>数字人与视频 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .studio { display: grid; grid-template-columns: minmax(0, 1.35fr) 300px; gap: 14px; align-items: start; }
+  .phone-frame {
+    width: 100%; max-width: 268px; aspect-ratio: 9 / 16; margin: 0 auto;
+    border-radius: 22px; position: relative; overflow: hidden;
+    background: radial-gradient(110% 80% at 50% 0%, #2a3341 0%, #10141b 55%, #05070a 100%);
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 24px 60px rgba(0,0,0,.22);
+  }
+  .phone-frame .person {
+    position: absolute; left: 50%; bottom: 0; transform: translateX(-50%);
+    width: 74%; height: 74%;
+    background:
+      radial-gradient(46% 30% at 50% 12%, #4a5464 0%, #39414f 60%, transparent 62%),
+      radial-gradient(64% 46% at 50% 78%, #2b323d 0%, #232a33 70%, transparent 72%);
+    border-radius: 46% 46% 0 0 / 32% 32% 0 0;
+    opacity: .92;
+  }
+  .phone-frame .person::after {
+    content: ""; position: absolute; left: 50%; top: 14%; transform: translateX(-50%);
+    width: 34%; aspect-ratio: 1; border-radius: 50%;
+    background: linear-gradient(180deg, #6b7788, #4a5464);
+  }
+  .phone-frame .aigc {
+    position: absolute; top: 9px; right: 9px; z-index: 2;
+    font-size: 8px; letter-spacing: .06em; color: rgba(255,255,255,.72);
+    border: 1px solid rgba(255,255,255,.24); border-radius: 5px; padding: 2px 5px;
+  }
+  .phone-frame .brandline {
+    position: absolute; top: 12px; left: 11px; z-index: 2;
+    font-size: 8.5px; color: rgba(255,255,255,.55); letter-spacing: .04em;
+  }
+  .phone-frame .subtitle {
+    position: absolute; left: 10px; right: 10px; bottom: 42px; z-index: 2;
+    background: rgba(0,0,0,.42); border-radius: 7px; padding: 7px 8px;
+    font-size: 9.5px; line-height: 1.55; color: #fff; text-align: center;
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  }
+  .phone-frame .progress { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(255,255,255,.16); z-index: 2; }
+  .phone-frame .progress i { display: block; height: 100%; width: 38%; background: #fff; }
+  .phone-frame .play {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: 46px; height: 46px; border-radius: 50%; z-index: 3;
+    background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3);
+    display: grid; place-items: center; color: #fff; cursor: pointer;
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+
+  .seg-line { display: flex; flex-direction: column; gap: 0; }
+  .script-seg { border-bottom: 1px solid var(--hair-2); padding: 12px 0; }
+  .script-seg:last-child { border-bottom: 0; }
+  .script-seg .h {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 7px;
+    font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3);
+  }
+  .script-seg .h b { color: var(--ink); font-weight: 600; letter-spacing: 0; font-size: 11.5px; text-transform: none; }
+  .script-seg .h .tt { margin-left: auto; font-variant-numeric: tabular-nums; }
+  .script-seg textarea {
+    width: 100%; border: 1px solid transparent; background: #fbfbfc; border-radius: 9px;
+    padding: 9px 11px; font: inherit; font-size: 12.5px; line-height: 1.65; color: #2b2b2e;
+    resize: vertical; outline: none; transition: all .2s var(--ease);
+  }
+  .script-seg textarea:focus { background: #fff; border-color: rgba(0,113,227,.5); box-shadow: 0 0 0 3px rgba(0,113,227,.1); }
+
+  .talent-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }
+  .talent {
+    border: 1px solid var(--hair); border-radius: 12px; overflow: hidden; cursor: pointer;
+    background: #fff; transition: all .25s var(--ease);
+  }
+  .talent:hover { transform: translateY(-2px); border-color: rgba(0,113,227,.4); }
+  .talent.on { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,113,227,.14); }
+  .talent .pic {
+    height: 74px; position: relative;
+    background: linear-gradient(180deg, #eceef2, #dfe3e9);
+    overflow: hidden;
+  }
+  .talent .pic::after {
+    content: ""; position: absolute; left: 50%; top: 20%; transform: translateX(-50%);
+    width: 30px; height: 30px; border-radius: 50%; background: #b9c0cb;
+  }
+  .talent .pic::before {
+    content: ""; position: absolute; left: 50%; bottom: -14px; transform: translateX(-50%);
+    width: 54px; height: 44px; border-radius: 46% 46% 0 0 / 40% 40% 0 0; background: #c7cdd6;
+  }
+  .talent .nm { padding: 6px 8px; font-size: 10.5px; color: #3a3a3c; border-top: 1px solid var(--hair); }
+  .talent.mine .pic { background: linear-gradient(160deg, #cfe2ff, #e8e4fb); }
+  .talent.mine .pic::after { background: #6e8fc4; }
+  .talent.mine .pic::before { background: #8299c4; }
+
+  .voice-item {
+    display: flex; align-items: center; gap: 9px; padding: 9px 10px;
+    border-radius: 10px; border: 1px solid var(--hair); cursor: pointer; margin-bottom: 7px;
+    transition: all .2s var(--ease); background: #fff;
+  }
+  .voice-item:hover { background: #fafafa; }
+  .voice-item.on { border-color: var(--accent); background: rgba(0,113,227,.04); }
+  .voice-item .wv {
+    width: 22px; height: 22px; border-radius: 50%; background: rgba(0,113,227,.1);
+    color: var(--accent); display: grid; place-items: center; font-size: 9px; flex: none;
+  }
+  .voice-item .nm2 { font-size: 12px; }
+  .voice-item .tg { margin-left: auto; font-size: 10px; color: var(--ink-3); }
+
+  .cap-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 12px; color: #3a3a3c; }
+  .quota { height: 5px; border-radius: 99px; background: #ececef; overflow: hidden; margin-top: 8px; }
+  .quota i { display: block; height: 100%; background: var(--accent); width: 58%; }
+
+  @media (max-width: 1080px) { .studio { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 520px) { .talent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+</style>
+</head>
+<body data-page="content" data-title="数字人与视频" data-crumb="和序装饰 › 内容 › 数字人工作室">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <div class="row" style="margin-bottom:14px">
+        <span class="badge ok"><span class="d"></span>形象已认证</span>
+        <span class="badge info">AIGC 标识已开启</span>
+        <span class="sub">肖像与声音授权书：已上传，2027-06 到期</span>
+        <div class="push row">
+          <a class="btn" href="content.html">回到内容中心</a>
+          <button class="btn primary" data-toast="已提交生成，预计 4 分钟出片">生成 1 条口播</button>
+        </div>
+      </div>
+
+      <section class="card flush">
+        <div class="tabs" data-tabs="av">
+          <button class="on" data-tab="a">口播生产</button>
+          <button data-tab="b">我的形象</button>
+          <button data-tab="c">声音与模板</button>
+        </div>
+
+        <!-- A 口播生产 -->
+        <div class="tabpane on" data-pane-group="av" data-pane="a">
+          <div class="card-bd">
+            <div class="studio">
+              <!-- 左：脚本 -->
+              <div class="card" style="padding:16px 18px">
+                <div class="card-hd" style="padding:0">
+                  <div>
+                    <h3>口播脚本 · 60 秒</h3>
+                    <div class="sub">基于「老房翻新套餐」事实卡生成 · 首段已含可引用事实</div>
+                  </div>
+                  <button class="btn sm" data-toast="已按 SKU 事实重新生成脚本">重新生成</button>
+                </div>
+                <div class="seg-line mt12">
+                  <div class="script-seg">
+                    <div class="h"><b>开场钩子</b><span class="tt">0–4s · 22 字</span></div>
+                    <textarea rows="2">南京老房翻新，报价 980 一平，为什么有人最后花了 1600？</textarea>
+                  </div>
+                  <div class="script-seg">
+                    <div class="h"><b>痛点</b><span class="tt">4–16s · 61 字</span></div>
+                    <textarea rows="3">差价大多出在三处：拆墙清运没写进报价、水电按点位另算、门窗更换按樘加钱。这三项如果口头承诺，后期最难扯清。</textarea>
+                  </div>
+                  <div class="script-seg">
+                    <div class="h"><b>方案与事实</b><span class="tt">16–42s · 118 字</span></div>
+                    <textarea rows="4">和序装饰 2012 年在南京做老房改造，现在 4 家直营门店，整装报价 980 到 1350 元每平。报价单把拆改、水电、泥木、油漆、主材安装逐项列明，增项超过 500 元要你签字确认才做。基础工程质保 5 年，水电 10 年，写进合同。</textarea>
+                  </div>
+                  <div class="script-seg">
+                    <div class="h"><b>行动号召</b><span class="tt">42–60s · 44 字</span></div>
+                    <textarea rows="3">想知道你家翻新大概多少钱，可以在评论区留下面积和房龄，我们按南京实际工价给你算一版。</textarea>
+                  </div>
+                </div>
+
+                <div class="divider"></div>
+                <div class="row" style="gap:14px">
+                  <label class="row" style="gap:7px;font-size:12px"><input type="checkbox" checked /> 自动字幕</label>
+                  <label class="row" style="gap:7px;font-size:12px"><input type="checkbox" checked /> 片尾二维码</label>
+                  <label class="row" style="gap:7px;font-size:12px"><input type="checkbox" checked /> AIGC 角标</label>
+                  <span class="push sub">字数 245 · 预计时长 58s</span>
+                </div>
+              </div>
+
+              <!-- 右：预览 + 设置 -->
+              <div class="stack">
+                <div class="card" style="padding:16px">
+                  <div class="row" style="margin-bottom:12px">
+                    <h3 style="margin:0;font-size:13.5px;font-weight:600">预览</h3>
+                    <span class="badge ok push">9:16</span>
+                  </div>
+                  <div class="phone-frame">
+                    <span class="brandline">和序装饰 · 老房翻新</span>
+                    <span class="aigc">AI 生成</span>
+                    <div class="person"></div>
+                    <div class="subtitle">报价单逐项列明，增项超过 500 元需签字确认</div>
+                    <div class="play" data-toast="原型演示：播放器未接入">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5-11-6.5z"/></svg>
+                    </div>
+                    <div class="progress"><i></i></div>
+                  </div>
+                  <div class="row mt12" style="gap:6px;justify-content:center">
+                    <span class="badge">竖版 1080×1920</span>
+                    <span class="badge">MP4</span>
+                  </div>
+                </div>
+
+                <div class="card" style="padding:16px">
+                  <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">本月配额</h3><span class="badge info push">58%</span></div>
+                  <div class="quota"><i></i></div>
+                  <div class="row mt6" style="justify-content:space-between">
+                    <span class="sub">已用 29 分钟</span><span class="sub">剩余 21 分钟</span>
+                  </div>
+                  <div class="divider"></div>
+                  <div class="cap-row"><span>批量生成</span><button class="btn sm" data-toast="已排队生成 10 条（不同开头与画面）">10 条</button></div>
+                  <div class="cap-row"><span>超量单价</span><span class="sub">¥6 / 分钟</span></div>
+                </div>
+
+                <div class="note">
+                  <span class="ico">!</span>
+                  <div>数字人出现在广告中需保持 <b>AIGC 角标</b>，并确保肖像授权在有效期内。</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B 我的形象 -->
+        <div class="tabpane" data-pane-group="av" data-pane="b">
+          <div class="card-bd">
+            <div class="row" style="margin-bottom:12px">
+              <div>
+                <div style="font-size:14px;font-weight:600">形象库</div>
+                <div class="sub">预置形象可直接使用；克隆专属形象需上传授权书并完成活体校验</div>
+              </div>
+              <div class="push row">
+                <button class="btn" data-toast="克隆流程：上传 ≥3 分钟视频 → 活体校验 → 审核（1 个工作日）">克隆专属形象</button>
+              </div>
+            </div>
+
+            <div class="talent-grid">
+              <div class="talent mine on"><div class="pic"></div><div class="nm">我的形象 · 李敏</div></div>
+              <div class="talent"><div class="pic"></div><div class="nm">商务男声 A</div></div>
+              <div class="talent"><div class="pic"></div><div class="nm">商务女声 B</div></div>
+              <div class="talent"><div class="pic"></div><div class="nm">家居博主 C</div></div>
+              <div class="talent"><div class="pic"></div><div class="nm">专业顾问 D</div></div>
+              <div class="talent"><div class="pic"></div><div class="nm">亲切导购 E</div></div>
+            </div>
+
+            <div class="grid g2 mt18">
+              <div class="card" style="padding:16px">
+                <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">授权与合规</h3><span class="badge ok push">合规</span></div>
+                <div class="check"><span class="dot">✓</span><div class="txt"><b>肖像使用授权书</b><div class="code">李敏 · 2026-06 上传 · 有效期至 2027-06</div></div></div>
+                <div class="check"><span class="dot">✓</span><div class="txt"><b>声音克隆授权</b><div class="code">同一授权书覆盖，样本 42 秒</div></div></div>
+                <div class="check warn"><span class="dot">!</span><div class="txt"><b>活体校验</b><div class="code">上次校验 2026-09，建议每 6 个月复检</div></div><button class="btn sm">复检</button></div>
+              </div>
+              <div class="card" style="padding:16px">
+                <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">使用记录</h3><span class="sub push">本月</span></div>
+                <div class="li"><span class="lead b">1</span><div class="txt"><div class="t1">老房翻新报价避坑（60s）</div><div class="t2">10-26 · 已发布至抖音</div></div></div>
+                <div class="li"><span class="lead b">2</span><div class="txt"><div class="t1">水电质保怎么算（30s）</div><div class="t2">10-24 · 已发布至小红书</div></div></div>
+                <div class="li"><span class="lead n">3</span><div class="txt"><div class="t1">河西门店探店（45s）</div><div class="t2">10-21 · 草稿</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C 声音与模板 -->
+        <div class="tabpane" data-pane-group="av" data-pane="c">
+          <div class="card-bd">
+            <div class="grid g2">
+              <div class="card" style="padding:16px">
+                <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">音色</h3><span class="badge info push">可试听</span></div>
+                <div class="mt12">
+                  <div class="voice-item on"><span class="wv">▶</span><span class="nm2">我的音色（克隆）</span><span class="tg">相似度 96%</span></div>
+                  <div class="voice-item"><span class="wv">▶</span><span class="nm2">男声 · 沉稳商务</span><span class="tg">预置</span></div>
+                  <div class="voice-item"><span class="wv">▶</span><span class="nm2">女声 · 亲和讲解</span><span class="tg">预置</span></div>
+                  <div class="voice-item"><span class="wv">▶</span><span class="nm2">南京方言 · 生活化</span><span class="tg">预置</span></div>
+                </div>
+                <div class="divider"></div>
+                <div class="cap-row"><span>语速</span><div class="seg"><button>慢</button><button class="on">标准</button><button>快</button></div></div>
+                <div class="cap-row"><span>情绪</span><div class="seg"><button>平实</button><button class="on">专业</button><button>热情</button></div></div>
+              </div>
+
+              <div class="card" style="padding:16px">
+                <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">视频模板</h3><span class="badge">5 个</span></div>
+                <div class="mt12">
+                  <div class="voice-item on"><span class="wv" style="background:rgba(29,157,90,.12);color:#1a7a45">✓</span><span class="nm2">居家讲解（门店/工地实拍）</span><span class="tg">9:16</span></div>
+                  <div class="voice-item"><span class="wv">▤</span><span class="nm2">对比测评（表格动效）</span><span class="tg">9:16</span></div>
+                  <div class="voice-item"><span class="wv">▤</span><span class="nm2">价格清单（数字大字）</span><span class="tg">9:16</span></div>
+                  <div class="voice-item"><span class="wv">▤</span><span class="nm2">品牌故事（图集轮播）</span><span class="tg">16:9</span></div>
+                </div>
+                <div class="divider"></div>
+                <div class="cap-row"><span>背景音乐</span><span class="sub">版权库 · 轻商务 03</span></div>
+                <div class="cap-row"><span>品牌水印</span><span class="switch on push" role="switch" aria-checked="true" aria-label="品牌水印"></span></div>
+                <div class="cap-row"><span>AIGC 隐式标识</span><span class="switch on push" role="switch" aria-checked="true" aria-label="AIGC 隐式标识"></span></div>
+              </div>
+            </div>
+
+            <div class="card mt18" style="padding:16px">
+              <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">已生成视频</h3><a class="link sub push" href="media.html">去分发 ›</a></div>
+              <div class="tbl-wrap">
+                <table class="tbl">
+                  <thead><tr><th>标题</th><th>时长</th><th>模板</th><th>状态</th><th>发布</th><th>AI 引用</th></tr></thead>
+                  <tbody>
+                    <tr><td class="name">老房翻新报价避坑</td><td class="num">60s</td><td>居家讲解</td><td><span class="badge ok">已发布</span></td><td>抖音 · 10-26</td><td><span class="badge info">1 次</span></td></tr>
+                    <tr><td class="name">水电质保怎么算</td><td class="num">30s</td><td>价格清单</td><td><span class="badge ok">已发布</span></td><td>小红书 · 10-24</td><td><span class="badge">—</span></td></tr>
+                    <tr><td class="name">河西门店探店</td><td class="num">45s</td><td>品牌故事</td><td><span class="badge warn">待审核</span></td><td class="dim">—</td><td><span class="badge">—</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>监测与复盘 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .mx { width: 100%; border-collapse: separate; border-spacing: 4px; font-size: 11px; }
+  .mx th { font-weight: 500; color: var(--ink-3); font-size: 10px; text-align: center; padding-bottom: 2px; }
+  .mx th:first-child { text-align: left; padding-left: 2px; }
+  .mx td { text-align: center; }
+  .mx td:first-child { text-align: left; font-size: 11.5px; color: #3a3a3c; padding-right: 6px; white-space: nowrap; }
+  .mx i { display: block; height: 24px; border-radius: 5px; }
+</style>
+</head>
+<body data-page="monitor" data-title="监测与复盘" data-crumb="和序装饰 › 复盘 › 收录 / 竞品 / 归因">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <div class="row" style="margin-bottom:14px">
+        <span class="badge ok"><span class="d"></span>今日巡检完成 09:12</span>
+        <span class="sub">120 条 Prompt 轻量巡检（36 条高波动）· 数据完整率 100%</span>
+        <div class="push row">
+          <button class="btn" data-toast="已生成 9 月月报（含竞品对比与下月建议）">生成月报</button>
+          <button class="btn primary" data-toast="已触发全量复测，预计 28 分钟">全量复测</button>
+        </div>
+      </div>
+
+      <section class="card flush">
+        <div class="tabs" data-tabs="mon">
+          <button class="on" data-tab="a">收录监测</button>
+          <button data-tab="b">信源矩阵</button>
+          <button data-tab="c">竞品雷达</button>
+          <button data-tab="d">归因分析</button>
+        </div>
+
+        <!-- A 收录监测 -->
+        <div class="tabpane on" data-pane-group="mon" data-pane="a">
+          <div class="card-bd">
+            <div class="grid g4">
+              <div class="kpi"><div class="label">今日提及</div><div class="val">38<small>条</small></div><div class="foot"><span class="delta up">▲ 6</span><span class="sub">昨日 32</span></div></div>
+              <div class="kpi"><div class="label">新增引用</div><div class="val">3<small>次</small></div><div class="foot"><span class="delta up">▲ 1</span><span class="sub">来自 2 篇内容</span></div></div>
+              <div class="kpi"><div class="label">掉榜</div><div class="val">2<small>条</small></div><div class="foot"><span class="delta down">▼ 2</span><span class="sub">环比降 ≥ 30%</span></div></div>
+              <div class="kpi"><div class="label">负面 / 错误</div><div class="val">1<small>条</small></div><div class="foot"><span class="delta down">需处理</span><span class="sub">元宝 · 价格过时</span></div></div>
+            </div>
+
+            <div class="split mt18">
+              <div class="card flush">
+                <div class="card-hd" style="padding:14px 0 0"><h3>内容级引用追踪</h3><span class="sub">发布后 3 / 7 / 15 / 30 天自动回测</span></div>
+                <div class="tbl-wrap">
+                  <table class="tbl">
+                    <thead><tr><th>内容</th><th>发布媒体</th><th>引用</th><th>平台</th><th>首次引用</th></tr></thead>
+                    <tbody>
+                      <tr><td class="name">全包、半包、清包怎么选</td><td>知乎 · 家居研究所</td><td><span class="badge info">5 次</span></td><td>豆包 / DS / 元宝</td><td class="num">10-24</td></tr>
+                      <tr><td class="name">南京装修公司怎么选（5 个指标）</td><td>南京日报 · 城市生活</td><td><span class="badge info">3 次</span></td><td>豆包 / Kimi</td><td class="num">10-26</td></tr>
+                      <tr><td class="name">2026 南京老房翻新预算清单</td><td>龙虎网 · 南京生活</td><td><span class="badge info">3 次</span></td><td>豆包</td><td class="num">10-24</td></tr>
+                      <tr><td class="name">装修合同里的 7 个隐藏费用</td><td>扬子晚报网 · 家居</td><td><span class="badge info">1 次</span></td><td>DeepSeek</td><td class="num">10-21</td></tr>
+                      <tr><td class="name">河西片区三居室改造实录</td><td>小红书 · 南京家居君</td><td><span class="badge">0</span></td><td class="dim">—</td><td class="dim">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="stack">
+                <div class="card">
+                  <div class="card-hd" style="padding:0"><h3>告警</h3><span class="badge bad">2 紧急</span></div>
+                  <div class="card-bd" style="padding:10px 0 0">
+                    <div class="note bad"><span class="ico">!</span><div><b>竞品超车</b>：栖岸设计进入豆包前 3，我方掉出推荐。</div></div>
+                    <div class="note warn mt6"><span class="ico">!</span><div><b>信息错误</b>：元宝引用 2024 年人均价 98 元。</div></div>
+                    <div class="li mt6"><span class="lead n">报</span><div class="txt"><div class="t1">9 月月报已生成</div><div class="t2">AVI 21.6 → 34，+12.4</div></div><a class="btn sm" href="#">查看</a></div>
+                  </div>
+                </div>
+                <div class="card">
+                  <div class="card-hd" style="padding:0"><h3>本周迭代建议</h3></div>
+                  <div class="card-bd" style="padding:10px 0 0">
+                    <div class="check"><span class="dot">1</span><div class="txt"><b>补投 4 家本地门户</b><div class="code">覆盖竞品 70% 的信源</div></div></div>
+                    <div class="check"><span class="dot">2</span><div class="txt"><b>更新门店数 3 → 4</b><div class="code">影响 3 个平台的识别准确率</div></div></div>
+                    <div class="check"><span class="dot">3</span><div class="txt"><b>生产 6 篇决策型内容</b><div class="code">补齐 18 条未覆盖问题</div></div></div>
+                    <button class="btn primary block mt12" data-toast="3 项建议已转为任务">转为任务</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- B 信源矩阵 -->
+        <div class="tabpane" data-pane-group="mon" data-pane="b">
+          <div class="card-bd">
+            <div class="row" style="margin-bottom:12px">
+              <div>
+                <div style="font-size:14px;font-weight:600">域名 × 平台引用热度</div>
+                <div class="sub">颜色越深表示该域名在此平台被引用次数越多；灰底为未覆盖</div>
+              </div>
+              <div class="push legend">
+                <span><i style="background:rgba(0,113,227,.12)"></i>低</span>
+                <span><i style="background:rgba(0,113,227,.45)"></i>中</span>
+                <span><i style="background:rgba(0,113,227,.9)"></i>高</span>
+              </div>
+            </div>
+
+            <div class="split">
+              <div>
+                <table class="mx">
+                  <thead>
+                    <tr><th>域名</th><th>豆包</th><th>DS</th><th>元宝</th><th>Kimi</th><th>通义</th><th>文心</th><th>AIW</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>njhouse.com</td>
+                      <td><i style="background:rgba(0,113,227,.9)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td class="strong">92</td>
+                    </tr>
+                    <tr>
+                      <td>yangtse.com</td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.9)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td class="strong">88</td>
+                    </tr>
+                    <tr>
+                      <td>longhoo.net</td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td class="strong">79</td>
+                    </tr>
+                    <tr>
+                      <td>zhihu.com</td>
+                      <td><i style="background:rgba(0,113,227,.9)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.9)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td class="strong">71</td>
+                    </tr>
+                    <tr>
+                      <td>xiaohongshu.com</td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td class="strong">64</td>
+                    </tr>
+                    <tr>
+                      <td>hexu-design.com（自有）</td>
+                      <td><i style="background:rgba(0,113,227,.45)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td class="strong">48</td>
+                    </tr>
+                    <tr>
+                      <td>dianping.com</td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td><i style="background:rgba(0,113,227,.12)"></i></td>
+                      <td><i style="background:rgba(0,0,0,.04)"></i></td>
+                      <td class="strong">58</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="stack">
+                <div class="card" style="padding:14px">
+                  <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">高权重未覆盖</h3><span class="badge bad push">8</span></div>
+                  <div class="li"><span class="lead a">1</span><div class="txt"><div class="t1">njhouse.com</div><div class="t2">AIW 92 · 竞品已覆盖</div></div><a class="btn sm" href="media.html">投</a></div>
+                  <div class="li"><span class="lead a">2</span><div class="txt"><div class="t1">yangtse.com</div><div class="t2">AIW 88 · 未覆盖</div></div><a class="btn sm" href="media.html">投</a></div>
+                  <div class="li"><span class="lead a">3</span><div class="txt"><div class="t1">xinhuanet.com/js</div><div class="t2">AIW 85 · 门槛高</div></div><a class="btn sm" href="media.html">投</a></div>
+                  <div class="li"><span class="lead a">4</span><div class="txt"><div class="t1">longhoo.net</div><div class="t2">AIW 79 · 竞品已覆盖</div></div><a class="btn sm" href="media.html">投</a></div>
+                  <button class="btn primary block mt12" data-toast="已按这 4 个域名生成投放方案（¥6,100）">一键生成方案</button>
+                </div>
+                <div class="card" style="padding:14px">
+                  <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">已覆盖</h3><span class="badge ok push">6</span></div>
+                  <div class="li"><span class="lead g">✓</span><div class="txt"><div class="t1">zhihu.com</div><div class="t2">AIW 71 · 引用 5 次</div></div></div>
+                  <div class="li"><span class="lead g">✓</span><div class="txt"><div class="t1">xiaohongshu.com</div><div class="t2">AIW 64 · 引用 1 次</div></div></div>
+                  <div class="li"><span class="lead g">✓</span><div class="txt"><div class="t1">dianping.com</div><div class="t2">AIW 58 · 引用 1 次</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- C 竞品雷达 -->
+        <div class="tabpane" data-pane-group="mon" data-pane="c">
+          <div class="card-bd">
+            <div class="row" style="margin-bottom:12px">
+              <div>
+                <div style="font-size:14px;font-weight:600">竞品对比矩阵</div>
+                <div class="sub">同一批 120 条 Prompt 的横向对比，红色为我方落后项</div>
+              </div>
+              <div class="seg push"><button class="on">全部平台</button><button>豆包</button><button>决策型</button></div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>指标</th><th>和序装饰（我方）</th><th>栖岸设计</th><th>木言空间</th><th>连云装饰</th><th>差距判断</th></tr></thead>
+                <tbody>
+                  <tr><td class="name">AVI</td><td class="strong">34</td><td class="num">61</td><td class="num">47</td><td class="num">29</td><td><span class="badge bad">落后第一 27</span></td></tr>
+                  <tr><td class="name">提及率</td><td class="strong">42%</td><td class="num">71%</td><td class="num">58%</td><td class="num">38%</td><td><span class="badge bad">落后 29 pt</span></td></tr>
+                  <tr><td class="name">首选率（前 3）</td><td class="strong">10%</td><td class="num">28%</td><td class="num">19%</td><td class="num">8%</td><td><span class="badge warn">差距可追</span></td></tr>
+                  <tr><td class="name">识别准确率</td><td class="strong">92%</td><td class="num">88%</td><td class="num">84%</td><td class="num">79%</td><td><span class="badge ok">领先</span></td></tr>
+                  <tr><td class="name">被引用域名数</td><td class="strong">6</td><td class="num">18</td><td class="num">11</td><td class="num">7</td><td><span class="badge bad">落后 12</span></td></tr>
+                  <tr><td class="name">决策型内容覆盖</td><td class="strong">12 / 30</td><td class="num">26 / 30</td><td class="num">21 / 30</td><td class="num">15 / 30</td><td><span class="badge bad">缺口最大</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="grid g2 mt18">
+              <div class="card" style="padding:14px">
+                <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">对手被强调的卖点</h3><span class="badge info push">栖岸设计</span></div>
+                <div class="row tight mt12">
+                  <span class="badge">免费量房设计</span>
+                  <span class="badge">48 小时出方案</span>
+                  <span class="badge">主材 3 折起</span>
+                  <span class="badge">延保 10 年</span>
+                  <span class="badge">工地实时直播</span>
+                </div>
+                <div class="note mt12"><span class="ico">i</span><div>「工地直播」与「48 小时出方案」我方已有能力但从未对外表达，建议优先补齐这两个话术缺口。</div></div>
+              </div>
+              <div class="card" style="padding:14px">
+                <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">对手新增动作</h3><span class="sub push">近 14 天</span></div>
+                <div class="li"><span class="lead p">栖</span><div class="txt"><div class="t1">新增 9 篇本地门户稿</div><div class="t2">10-20 ~ 10-26</div></div></div>
+                <div class="li"><span class="lead p">栖</span><div class="txt"><div class="t1">豆包提及率 58% → 71%</div><div class="t2">疑似集中投放</div></div></div>
+                <div class="li"><span class="lead n">木</span><div class="txt"><div class="t1">上线产品对比页</div><div class="t2">结构化数据完整</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- D 归因 -->
+        <div class="tabpane" data-pane-group="mon" data-pane="d">
+          <div class="card-bd">
+            <div class="split">
+              <div>
+                <div style="font-size:14px;font-weight:600">转化漏斗</div>
+                <div class="sub" style="margin-bottom:14px">AI 提及 → 官网访问 → 咨询 → 成交（成交为手动回填）</div>
+                <div class="funnel">
+                  <div class="step"><span class="lb">AI 提及</span><span class="tr"><i data-w="100"></i></span><span class="vv">1,140</span></div>
+                  <div class="step"><span class="lb">官网访问</span><span class="tr"><i data-w="34"></i></span><span class="vv">386</span></div>
+                  <div class="step"><span class="lb">咨询 / 表单</span><span class="tr"><i data-w="16"></i></span><span class="vv">128</span></div>
+                  <div class="step"><span class="lb">到店 / 量房</span><span class="tr"><i data-w="8"></i></span><span class="vv">47</span></div>
+                  <div class="step"><span class="lb">成交</span><span class="tr"><i data-w="3"></i></span><span class="vv">9</span></div>
+                </div>
+                <div class="row mt18">
+                  <span class="badge">提及→访问 33.9%</span>
+                  <span class="badge">访问→咨询 33.2%</span>
+                  <span class="badge ok">咨询→成交 7.0%</span>
+                </div>
+                <div class="note mt18"><span class="ico">i</span><div>「提及→访问」是当前瓶颈：AI 答案中未给出品牌名外的行动指引，建议在内容与官网中强化「预约量房」的实体表述。</div></div>
+              </div>
+
+              <div class="stack">
+                <div class="card" style="padding:14px">
+                  <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">渠道归因</h3><span class="sub push">本月</span></div>
+                  <table class="tbl mt6">
+                    <thead><tr><th>来源</th><th class="r">线索</th><th class="r">成本</th><th class="r">单线索</th></tr></thead>
+                    <tbody>
+                      <tr><td>AI 引用</td><td class="r strong">37</td><td class="r">¥8,600</td><td class="r">¥232</td></tr>
+                      <tr><td>自然搜索</td><td class="r strong">29</td><td class="r">—</td><td class="r">—</td></tr>
+                      <tr><td>信息流</td><td class="r strong">44</td><td class="r">¥16,700</td><td class="r">¥380</td></tr>
+                      <tr><td>老客转介</td><td class="r strong">18</td><td class="r">—</td><td class="r">—</td></tr>
+                    </tbody>
+                  </table>
+                  <div class="note mt12"><span class="ico">i</span><div>AI 渠道单线索成本比信息流低 39%，建议下月预算向媒体投放倾斜。</div></div>
+                </div>
+
+                <div class="card" style="padding:14px">
+                  <div class="row"><h3 style="margin:0;font-size:13.5px;font-weight:600">内容 ROI（Top 3）</h3></div>
+                  <div class="li"><span class="lead g">1</span><div class="txt"><div class="t1">全包、半包、清包怎么选</div><div class="t2">成本 ¥2,200 · 线索 14 · CPL ¥157</div></div></div>
+                  <div class="li"><span class="lead g">2</span><div class="txt"><div class="t1">南京装修公司怎么选（5 个指标）</div><div class="t2">成本 ¥1,800 · 线索 11 · CPL ¥164</div></div></div>
+                  <div class="li"><span class="lead a">3</span><div class="txt"><div class="t1">河西片区改造实录</div><div class="t2">成本 ¥800 · 线索 0 · 未收录</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

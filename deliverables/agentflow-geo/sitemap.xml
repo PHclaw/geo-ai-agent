@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 放到 frontend/public/sitemap.xml
+     只收录真实存在且对外的路由（已核对 frontend/src/Router.tsx）：
+       /            LandingPage
+       /templates   模板市场
+       /pricing     复用 LandingPage（内容与首页相同，故不单独收录，建议给它加 canonical 指向 /）
+     登录后路由（/dashboard、/agents…）不收录。 -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>http://159.75.21.251:3000/</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>http://159.75.21.251:3000/templates</loc>
+    <lastmod>2026-10-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>

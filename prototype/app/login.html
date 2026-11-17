@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>登录 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  body { background: var(--bg); }
+  .auth-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .auth-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 clamp(18px, 4vw, 40px);
+  }
+  .auth-nav .brand { padding: 0; }
+  .auth-nav .back {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .auth-nav .back:hover { color: var(--ink); }
+
+  .auth-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 470px);
+    align-items: center;
+    gap: clamp(30px, 6vw, 90px);
+    max-width: 1080px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px clamp(18px, 4vw, 40px) 70px;
+  }
+
+  .pitch h1 {
+    margin: 0;
+    font-size: clamp(30px, 4.4vw, 46px);
+    line-height: 1.1;
+    letter-spacing: -0.032em;
+    font-weight: 600;
+  }
+  .pitch h1 span { color: var(--ink-3); }
+  .pitch p {
+    margin: 18px 0 0;
+    max-width: 420px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink-2);
+  }
+  .pitch ul {
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+  }
+  .pitch li {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    font-size: 12.5px;
+    color: #3a3a3c;
+  }
+  .pitch li i {
+    width: 15px; height: 15px; border-radius: 50%; flex: none; margin-top: 2px;
+    background: rgba(0, 113, 227, .1); color: var(--accent);
+    display: grid; place-items: center; font-size: 9px; font-style: normal;
+  }
+  .trust { margin-top: 30px; display: flex; align-items: center; gap: 10px; font-size: 11.5px; color: var(--ink-3); }
+  .avatars { display: flex; }
+  .avatars span {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--bg);
+    margin-left: -7px; display: grid; place-items: center;
+    font-size: 9px; font-weight: 600; color: #fff;
+  }
+  .avatars span:first-child { margin-left: 0; }
+
+  .card-auth {
+    background: #fff;
+    border: 1px solid var(--hair);
+    border-radius: 20px;
+    padding: 30px 30px 26px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .06);
+  }
+  .card-auth h2 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+  .card-auth .lead {
+    margin: 7px 0 22px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+  }
+
+  .field2 { margin-bottom: 12px; }
+  .field2 label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .input-row { display: flex; gap: 8px; }
+  .input {
+    width: 100%;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid var(--hair);
+    background: #fbfbfc;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .input:focus {
+    background: #fff;
+    border-color: rgba(0, 113, 227, .6);
+    box-shadow: 0 0 0 3px rgba(0, 113, 227, .12);
+  }
+  .input.prefix { padding-left: 52px; }
+  .phone-wrap { position: relative; }
+  .phone-wrap .prefix-lab {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    font-size: 13px; color: var(--ink-2); padding-right: 9px; border-right: 1px solid var(--hair);
+  }
+  .btn-code {
+    flex: none; width: 108px; height: 40px; border-radius: 10px;
+    border: 1px solid var(--hair); background: #fff; cursor: pointer;
+    font-size: 12px; color: var(--ink);
+  }
+  .btn-code:hover { background: #f7f7f8; }
+  .btn-code[disabled] { color: var(--ink-3); cursor: default; background: #f7f7f8; }
+
+  .btn-auth {
+    width: 100%;
+    height: 42px;
+    margin-top: 6px;
+    border: 0;
+    border-radius: 10px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+  }
+  .btn-auth:hover { background: #0077ed; }
+  .btn-auth:active { transform: scale(.99); }
+
+  .or {
+    display: flex; align-items: center; gap: 10px;
+    margin: 20px 0 16px; font-size: 11px; color: var(--ink-3);
+  }
+  .or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--hair); }
+
+  .oauth { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+  .oauth button {
+    height: 38px; border-radius: 10px; border: 1px solid var(--hair);
+    background: #fff; font-size: 12.5px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .oauth button:hover { background: #f7f7f8; }
+
+  .legal {
+    margin-top: 20px;
+    font-size: 10.5px;
+    line-height: 1.6;
+    color: var(--ink-3);
+    letter-spacing: 0;
+  }
+  .legal a { color: var(--ink-2); text-decoration: underline; text-underline-offset: 2px; }
+
+  .switch-mode { margin-top: 14px; text-align: center; font-size: 12px; color: var(--ink-2); }
+  .switch-mode a { color: var(--accent); }
+
+  @media (max-width: 900px) {
+    .auth-main { grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+    .pitch { order: 2; }
+    .pitch h1 { font-size: 24px; }
+    .pitch ul, .trust { display: none; }
+    .card-auth { order: 1; padding: 24px 20px 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-nav">
+    <a class="brand" href="../index.html"><span class="mark"></span>GEO AI Agent</a>
+    <a class="back" href="../index.html">← 返回开始界面</a>
+  </div>
+
+  <div class="auth-main">
+    <section class="pitch">
+      <h1>先看清 AI 眼里的你，<br /><span>再决定钱该花在哪。</span></h1>
+      <p>登录后即可创建品牌档案，30 分钟内拿到第一份 AI 可见度诊断报告，包含竞品对比与证据原文。</p>
+      <ul>
+        <li><i>✓</i>8 个主流 AI 平台同步探测，结果可追溯到答案原文</li>
+        <li><i>✓</i>诊断到投放全流程打通，不用在 5 个工具间搬数据</li>
+        <li><i>✓</i>首次诊断免费，不绑定投放预算</li>
+      </ul>
+      <div class="trust">
+        <div class="avatars">
+          <span style="background:#0a84ff">和</span>
+          <span style="background:#5e5ce6">栖</span>
+          <span style="background:#1d9d5a">木</span>
+          <span style="background:#b25000">连</span>
+        </div>
+        已有 1,240+ 本地商家在用
+      </div>
+    </section>
+
+    <section class="card-auth">
+      <h2>登录</h2>
+      <p class="lead">使用手机号登录，未注册将自动创建账号。</p>
+
+      <div class="field2">
+        <label for="phone">手机号</label>
+        <div class="phone-wrap">
+          <span class="prefix-lab">+86</span>
+          <input class="input prefix" id="phone" type="tel" inputmode="numeric" placeholder="请输入手机号" autocomplete="tel" />
+        </div>
+      </div>
+
+      <div class="field2">
+        <label for="code">验证码</label>
+        <div class="input-row">
+          <input class="input" id="code" type="text" inputmode="numeric" placeholder="6 位验证码" autocomplete="one-time-code" />
+          <button class="btn-code" id="sendCode">获取验证码</button>
+        </div>
+      </div>
+
+      <button class="btn-auth" id="loginBtn">登录 / 注册</button>
+
+      <div class="or">或</div>
+
+      <div class="oauth">
+        <button data-toast="已唤起微信扫码（原型演示）">微信扫码</button>
+        <button data-toast="已唤起企业微信授权（原型演示）">企业微信</button>
+      </div>
+
+      <p class="legal">
+        登录即表示同意 <a href="#">服务条款</a> 与 <a href="#">隐私政策</a>。
+        我们不会向第三方提供你的品牌数据，AI 平台探测仅使用公开问题与公开回答。
+      </p>
+
+      <div class="switch-mode">还没有品牌档案？<a href="wizard.html">先建一个 →</a></div>
+    </section>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  (function () {
+    var btn = document.getElementById("sendCode");
+    var phone = document.getElementById("phone");
+    var code = document.getElementById("code");
+    var login = document.getElementById("loginBtn");
+
+    btn.addEventListener("click", function () {
+      if (!/^\d{11}$/.test(phone.value.trim())) {
+        window.geoToast("请输入 11 位手机号");
+        phone.focus();
+        return;
+      }
+      var left = 60;
+      btn.disabled = true;
+      btn.textContent = left + "s 后重发";
+      window.geoToast("验证码已发送（原型演示：任意 6 位数字即可）");
+      var t = setInterval(function () {
+        left -= 1;
+        btn.textContent = left + "s 后重发";
+        if (left <= 0) { clearInterval(t); btn.disabled = false; btn.textContent = "获取验证码"; }
+      }, 1000);
+    });
+
+    login.addEventListener("click", function () {
+      if (!/^\d{11}$/.test(phone.value.trim())) { window.geoToast("请输入 11 位手机号"); phone.focus(); return; }
+      if (!/^\d{6}$/.test(code.value.trim())) { window.geoToast("请输入 6 位验证码"); code.focus(); return; }
+      window.geoToast("登录成功，正在进入工作台…");
+      setTimeout(function () { location.href = "dashboard.html"; }, 700);
+    });
+  })();
+</script>
+</body>
+</html>

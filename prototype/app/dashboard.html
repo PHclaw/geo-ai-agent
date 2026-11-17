@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>工作台 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+</head>
+<body data-page="dashboard" data-title="工作台" data-crumb="和序装饰 · 南京 · 3 家门店">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <!-- KPI -->
+      <section class="grid g4">
+        <div class="kpi">
+          <div class="label">AI 可见度 AVI</div>
+          <div class="val">34<small>/100</small></div>
+          <div class="foot">
+            <span class="delta up">▲ 12.4</span>
+            <span class="sub">vs 首月基线 21.6</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="label">品牌识别准确率</div>
+          <div class="val">92<small>%</small></div>
+          <div class="foot">
+            <span class="delta up">▲ 21 pt</span>
+            <span class="sub">3 项属性仍待修正</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="label">答案份额 SoV</div>
+          <div class="val">21.3<small>%</small></div>
+          <div class="foot">
+            <span class="delta up">▲ 3.1 pt</span>
+            <span class="sub">竞品均值 38.6%</span>
+          </div>
+        </div>
+        <div class="kpi">
+          <div class="label">本月线索</div>
+          <div class="val">128<small>条</small></div>
+          <div class="foot">
+            <span class="delta up">▲ 41%</span>
+            <span class="sub">其中 37 条来自 AI 渠道</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 趋势 + 待办 -->
+      <section class="split mt18">
+        <div class="card flush">
+          <div class="card-hd">
+            <div>
+              <h2>AI 可见度趋势</h2>
+              <div class="sub">近 90 天 · 全平台加权 AVI</div>
+            </div>
+            <div class="seg">
+              <button class="on">90 天</button>
+              <button>30 天</button>
+              <button>7 天</button>
+            </div>
+          </div>
+          <div class="card-bd">
+            <svg viewBox="0 0 760 210" width="100%" height="210" role="img" aria-label="AVI 近 90 天趋势：由 8 上升至 34">
+              <defs>
+                <linearGradient id="fillA" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0071e3" stop-opacity="0.18" />
+                  <stop offset="100%" stop-color="#0071e3" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <g stroke="#ececef" stroke-width="1">
+                <line x1="30" y1="40" x2="740" y2="40" />
+                <line x1="30" y1="80" x2="740" y2="80" />
+                <line x1="30" y1="120" x2="740" y2="120" />
+                <line x1="30" y1="160" x2="740" y2="160" />
+              </g>
+              <g fill="#a1a1a6" font-size="9">
+                <text x="0" y="43">60</text>
+                <text x="0" y="83">45</text>
+                <text x="0" y="123">30</text>
+                <text x="0" y="163">15</text>
+              </g>
+              <path d="M30,190 L30,168.7 L94,166 L158,163.3 L221,158 L285,160.7 L349,152.7 L412,144.7 L476,139.3 L540,131.3 L603,120.7 L667,112.7 L730,99.3 L730,190 Z"
+                fill="url(#fillA)" />
+              <polyline points="30,168.7 94,166 158,163.3 221,158 285,160.7 349,152.7 412,144.7 476,139.3 540,131.3 603,120.7 667,112.7 730,99.3"
+                fill="none" stroke="#0071e3" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" />
+              <polyline points="30,43.3 94,38 158,40.7 221,35.3 285,32.7 349,35.3 412,30 476,32.7 540,30 603,27.3 667,30 730,27.3"
+                fill="none" stroke="#c7c7cc" stroke-width="1.6" stroke-dasharray="4 4" stroke-linejoin="round" />
+              <circle cx="730" cy="99.3" r="4" fill="#0071e3" stroke="#fff" stroke-width="2" />
+              <circle cx="730" cy="27.3" r="3.4" fill="#fff" stroke="#a1a1a6" stroke-width="1.6" />
+            </svg>
+            <div class="row mt6">
+              <div class="legend"><i style="background:#0071e3"></i>和序装饰 34</div>
+              <div class="legend"><i style="background:#c7c7cc"></i>竞品均值 61</div>
+              <div class="push sub">上次诊断：今天 09:12</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>今日待办</h3>
+              <span class="badge warn"><span class="d"></span>5 项</span>
+            </div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="li">
+                <span class="lead a">审</span>
+                <div class="txt"><div class="t1">4 篇待审核内容</div><div class="t2">含 1 篇涉及价格事实，需确认</div></div>
+                <a class="btn sm" href="content.html">处理</a>
+              </div>
+              <div class="li">
+                <span class="lead b">投</span>
+                <div class="txt"><div class="t1">本地门户补投建议</div><div class="t2">8 家高权重信源未覆盖</div></div>
+                <a class="btn sm" href="media.html">查看</a>
+              </div>
+              <div class="li">
+                <span class="lead p">库</span>
+                <div class="txt"><div class="t1">人均价格冲突待确认</div><div class="t2">128 元 / 138 元 两个值</div></div>
+                <a class="btn sm" href="knowledge.html">确认</a>
+              </div>
+              <div class="li">
+                <span class="lead g">网</span>
+                <div class="txt"><div class="t1">官网 3 个页面待同步</div><div class="t2">门店信息已更新</div></div>
+                <a class="btn sm" href="site.html">同步</a>
+              </div>
+              <div class="li">
+                <span class="lead n">报</span>
+                <div class="txt"><div class="t1">9 月月报已生成</div><div class="t2">AVI +12.4，含竞品对比</div></div>
+                <a class="btn sm" href="monitor.html">查看</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>告警</h3>
+              <span class="sub">近 24 小时</span>
+            </div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="note bad" style="margin-bottom:8px">
+                <span class="ico">!</span>
+                <div><b>竞品超车</b>：栖岸设计在「南京装修公司哪家好」类问题上进入豆包前 3，你方未出现。</div>
+              </div>
+              <div class="note warn">
+                <span class="ico">!</span>
+                <div><b>信息错误</b>：元宝仍引用 2024 年人均价 98 元（当前 128 元）。</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 三栏 -->
+      <section class="grid g3 mt18">
+        <div class="card">
+          <div class="card-hd" style="padding:0">
+            <h3>分平台可见度</h3>
+            <span class="sub">AVI</span>
+          </div>
+          <div class="card-bd" style="padding:14px 0 0">
+            <div class="stack" style="gap:11px">
+              <div class="meter"><span class="k">豆包</span><span class="bar"><i data-w="41"></i></span><span class="v">41</span></div>
+              <div class="meter"><span class="k">DeepSeek</span><span class="bar"><i data-w="36"></i></span><span class="v">36</span></div>
+              <div class="meter"><span class="k">腾讯元宝</span><span class="bar"><i data-w="33"></i></span><span class="v">33</span></div>
+              <div class="meter"><span class="k">Kimi</span><span class="bar"><i data-w="28"></i></span><span class="v">28</span></div>
+              <div class="meter"><span class="k">通义 / 夸克</span><span class="bar"><i data-w="22"></i></span><span class="v">22</span></div>
+              <div class="meter"><span class="k">文心 / 百度</span><span class="bar"><i class="amber" data-w="19"></i></span><span class="v">19</span></div>
+              <div class="meter"><span class="k">智谱</span><span class="bar"><i class="amber" data-w="15"></i></span><span class="v">15</span></div>
+              <div class="meter"><span class="k">秘塔</span><span class="bar"><i class="red" data-w="12"></i></span><span class="v">12</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd" style="padding:0">
+            <h3>竞品速览</h3>
+            <a class="link sub" href="monitor.html">竞品雷达 ›</a>
+          </div>
+          <div class="card-bd" style="padding:14px 0 0">
+            <div class="stack" style="gap:12px">
+              <div>
+                <div class="row" style="gap:6px"><span style="font-size:12.5px;font-weight:500">和序装饰（我方）</span><span class="push num" style="font-size:12px;font-weight:600">34</span></div>
+                <div class="bar mt6"><i data-w="34"></i></div>
+              </div>
+              <div>
+                <div class="row" style="gap:6px"><span style="font-size:12.5px;font-weight:500">栖岸设计</span><span class="badge bad push">领先 27</span></div>
+                <div class="bar mt6"><i class="red" data-w="61"></i></div>
+              </div>
+              <div>
+                <div class="row" style="gap:6px"><span style="font-size:12.5px;font-weight:500">木言空间</span><span class="badge warn push">领先 13</span></div>
+                <div class="bar mt6"><i class="amber" data-w="47"></i></div>
+              </div>
+              <div>
+                <div class="row" style="gap:6px"><span style="font-size:12.5px;font-weight:500">连云装饰</span><span class="badge ok push">落后 5</span></div>
+                <div class="bar mt6"><i class="grey" data-w="29"></i></div>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="row" style="gap:8px">
+              <span class="badge info">信源缺口 8 个</span>
+              <span class="badge info">话术缺口 3 项</span>
+              <a class="link sub push" href="media.html">补齐 ›</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd" style="padding:0">
+            <h3>最新引用</h3>
+            <span class="sub">今日 +3</span>
+          </div>
+          <div class="card-bd" style="padding:10px 0 0">
+            <div class="li">
+              <span class="lead b">豆</span>
+              <div class="txt"><div class="t1">南京装修公司哪家好</div><div class="t2">引用：njhouse.com · 2 小时前</div></div>
+            </div>
+            <div class="li">
+              <span class="lead g">元</span>
+              <div class="txt"><div class="t1">老房翻新大概多少钱</div><div class="t2">引用：知乎专栏 · 5 小时前</div></div>
+            </div>
+            <div class="li">
+              <span class="lead p">DS</span>
+              <div class="txt"><div class="t1">全包和半包怎么选</div><div class="t2">引用：本公司官网 · 昨天</div></div>
+            </div>
+            <div class="note mt12">
+              <span class="ico">i</span>
+              <div>今日新增 8 条提及，其中 3 次进入推荐前 3。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 发布与收录 -->
+      <section class="card flush mt18">
+        <div class="card-hd">
+          <div>
+            <h2>最近发布与收录</h2>
+            <div class="sub">发布后 3 / 7 / 15 / 30 天自动回测是否被 AI 引用</div>
+          </div>
+          <div class="row">
+            <span class="badge ok"><span class="d"></span>12 篇已收录</span>
+            <a class="btn sm" href="media.html">全部投放</a>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>内容标题</th><th>发布媒体</th><th>发布时间</th><th>GEOS</th><th>收录</th><th>AI 引用</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="clickable" data-row-drawer="#d1">
+                <td class="name">2026 南京老房翻新全流程与预算清单</td>
+                <td>南京日报 · 城市生活</td>
+                <td class="num">10-24</td>
+                <td class="strong">86</td>
+                <td><span class="badge ok">已收录</span></td>
+                <td><span class="badge info">被引用 3 次</span></td>
+                <td class="r"><span class="link">详情</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#d1">
+                <td class="name">全包、半包、清包怎么选？一张表看懂</td>
+                <td>知乎 · 家居研究所</td>
+                <td class="num">10-22</td>
+                <td class="strong">91</td>
+                <td><span class="badge ok">已收录</span></td>
+                <td><span class="badge info">被引用 5 次</span></td>
+                <td class="r"><span class="link">详情</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#d1">
+                <td class="name">河西片区三居室改造实录（含报价）</td>
+                <td>小红书 · 南京家居君</td>
+                <td class="num">10-20</td>
+                <td class="strong">78</td>
+                <td><span class="badge warn">未收录</span></td>
+                <td><span class="badge">—</span></td>
+                <td class="r"><span class="link">详情</span></td>
+              </tr>
+              <tr class="clickable" data-row-drawer="#d1">
+                <td class="name">装修合同里的 7 个隐藏费用</td>
+                <td>扬子晚报网</td>
+                <td class="num">10-18</td>
+                <td class="strong">84</td>
+                <td><span class="badge ok">已收录</span></td>
+                <td><span class="badge info">被引用 1 次</span></td>
+                <td class="r"><span class="link">详情</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- 引用证据抽屉 -->
+<div class="drawer" id="d1" role="dialog" aria-label="引用证据">
+  <div class="drawer-hd">
+    <div>
+      <h3>引用证据 · 豆包</h3>
+      <div class="sub">2026-10-27 09:12 · 采样 3 次 · 模型版本 doubao-pro</div>
+    </div>
+    <button class="drawer-close" data-close-drawer aria-label="关闭">✕</button>
+  </div>
+  <div class="mt12">
+    <dl class="kv">
+      <dt>触发问题</dt><dd>南京老房翻新大概要多少钱？</dd>
+      <dt>品牌位次</dt><dd>第 2 位（共推荐 5 家）</dd>
+      <dt>准确度</dt><dd>价格与工期正确，门店数量过时</dd>
+      <dt>引用信源</dt><dd>njhouse.com、本公司官网</dd>
+    </dl>
+  </div>
+  <div class="quote-block">
+    南京地区老房翻新一般按建筑面积计价，<span class="hl">和序装饰</span>给出的参考区间为
+    <span class="hl">硬装 980–1350 元/㎡</span>，工期约 45–60 天，包含拆改、水电、泥木、油漆与主材安装。
+    <br /><br />
+    同类公司还包括栖岸设计、木言空间等，建议重点对比三项：拆改增项计价方式、水电点位数量、质保年限。
+    <div class="sub mt12">信源：njhouse.com（2026-10-24）、和序装饰官网（2026-10-11）</div>
+  </div>
+  <div class="note mt18">
+    <span class="ico">i</span>
+    <div>该答案中「3 家门店」已过时（当前 4 家），建议在知识库更新后补投一篇门店信息稿。</div>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

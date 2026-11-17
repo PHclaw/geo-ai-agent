@@ -1,0 +1,186 @@
+{
+  "at": "2026-11-12T07:25:19.814Z",
+  "brand": "AgentFlow",
+  "brandId": "a5396a49-7823-4644-aee1-38c87231edad",
+  "mode": "mock",
+  "passed": 25,
+  "failed": 0,
+  "elapsed": "30.9",
+  "results": [
+    {
+      "name": "健康检查",
+      "group": "环境",
+      "ok": true,
+      "ms": 0,
+      "summary": "mode=mock live=0/6"
+    },
+    {
+      "name": "品牌档案",
+      "group": "建档",
+      "ok": true,
+      "ms": 3,
+      "summary": "AgentFlow / 城市未登记 / AI Agent 平台 / site=未设置"
+    },
+    {
+      "name": "事实卡与提问",
+      "group": "建档",
+      "ok": true,
+      "ms": 15,
+      "summary": "事实卡 20（生效 16 / 冲突 4）· 提问 46 · 意图 决策,本地,口碑,比较,认知"
+    },
+    {
+      "name": "知识库统计",
+      "group": "资产",
+      "ok": true,
+      "ms": 2,
+      "summary": "文档 8（可检索 8）· 切片 117 · 字符 39867"
+    },
+    {
+      "name": "知识库检索",
+      "group": "资产",
+      "ok": true,
+      "ms": 63,
+      "summary": "命中 4 段 · 首条来源 AgentFlow产品介绍.docx · 相关度 18.37"
+    },
+    {
+      "name": "AI 探测一轮",
+      "group": "诊断",
+      "ok": true,
+      "ms": 13,
+      "summary": "runId=90e25783 · mode=mock · 样本 276"
+    },
+    {
+      "name": "最新探测结果",
+      "group": "诊断",
+      "ok": true,
+      "ms": 4,
+      "summary": "AVI=31 提及率=33% 首选率=33% 准确度=92.7 · 6 平台 276 样本（live=0 / mock=276）"
+    },
+    {
+      "name": "指标趋势",
+      "group": "诊断",
+      "ok": true,
+      "ms": 6,
+      "summary": "5 个日数据点 · 最新 AVI=40 SoV=100"
+    },
+    {
+      "name": "监测复盘聚合",
+      "group": "诊断",
+      "ok": true,
+      "ms": 7,
+      "summary": "趋势点 5 · 平台 6 项聚合字段"
+    },
+    {
+      "name": "工作台聚合",
+      "group": "诊断",
+      "ok": true,
+      "ms": 25,
+      "summary": "AVI=40（模型口径 31 / C 端口径 40）· 四象限=长期缺失 · 事实卡 20 · 提问 46 · 样本 276"
+    },
+    {
+      "name": "C 端取证队列",
+      "group": "诊断",
+      "ok": true,
+      "ms": 9,
+      "summary": "待取证 0 条"
+    },
+    {
+      "name": "模板文章生成",
+      "group": "内容",
+      "ok": true,
+      "ms": 25,
+      "summary": "生成 2 篇 · GEOS 86/83 · 事实回比 0/0"
+    },
+    {
+      "name": "智能体写作 SSE",
+      "group": "内容",
+      "ok": true,
+      "ms": 29081,
+      "summary": "29.1s · 4556 字 · GEOS 82 · 成功落库"
+    },
+    {
+      "name": "文章 HTML 导出",
+      "group": "内容",
+      "ok": true,
+      "ms": 16,
+      "summary": "4017 字节 · 含内置图片 否"
+    },
+    {
+      "name": "发布排期生成",
+      "group": "分发",
+      "ok": true,
+      "ms": 49,
+      "summary": "42 条 · 养号 12 · GEO 6 · 可用文章 14"
+    },
+    {
+      "name": "排期汇总口径",
+      "group": "分发",
+      "ok": true,
+      "ms": 5,
+      "summary": "总 43 · 知识 37 · GEO 6 · 已回填 0 · 计入效果 0"
+    },
+    {
+      "name": "媒体与投放台账",
+      "group": "分发",
+      "ok": true,
+      "ms": 39,
+      "summary": "媒体 8 · 订单 0 · 投放 0"
+    },
+    {
+      "name": "链接台账同步",
+      "group": "分发",
+      "ok": true,
+      "ms": 9,
+      "summary": "发现 1 · 新增 0 · 已存在 1"
+    },
+    {
+      "name": "链接存活巡检",
+      "group": "分发",
+      "ok": true,
+      "ms": 1108,
+      "summary": "检查 2 · 可访问 2 · 失效 0 · 网络错误 0"
+    },
+    {
+      "name": "SEO 站点扫描",
+      "group": "复盘",
+      "ok": true,
+      "ms": 163,
+      "summary": "41/100 · 4/9 通过 · mode=site-only · 检查 9 项"
+    },
+    {
+      "name": "SEO 看板",
+      "group": "复盘",
+      "ok": true,
+      "ms": 6,
+      "summary": "曝光率 0（manual）· 关键词 8 · 缺口 1"
+    },
+    {
+      "name": "官网可索引性体检",
+      "group": "复盘",
+      "ok": true,
+      "ms": 76,
+      "summary": "22/100 · 检查 9 项"
+    },
+    {
+      "name": "GEO 站点资产",
+      "group": "复盘",
+      "ok": true,
+      "ms": 23,
+      "summary": "llmsTxt, faqCount, jsonLdBusiness, jsonLdFaq, headSnippet"
+    },
+    {
+      "name": "服务商视图",
+      "group": "扩展",
+      "ok": true,
+      "ms": 21,
+      "summary": "客户 2 · 自有品牌 2 · 任务 1"
+    },
+    {
+      "name": "数字人配置",
+      "group": "扩展",
+      "ok": true,
+      "ms": 14,
+      "summary": "脚本分段 4 · 形象 0 · 音色 0 · 任务 2"
+    }
+  ]
+}

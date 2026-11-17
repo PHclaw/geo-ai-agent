@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>GEO AI Agent · 系统框架</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 26px 20px 34px;
+    background: #fafbfc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: #1d1d1f;
+  }
+  .page { max-width: 1180px; margin: 0 auto; }
+  h1 { margin: 0; text-align: center; font-size: 19px; font-weight: 650; letter-spacing: -.02em; }
+  .subtitle { margin: 5px 0 18px; text-align: center; font-size: 10.5px; color: #86868b; letter-spacing: .02em; }
+
+  .frame { display: grid; grid-template-columns: 218px minmax(0, 1fr) 236px; gap: 13px; position: relative; align-items: stretch; }
+
+  .col { border-radius: 14px; border: 1px solid; padding: 13px 12px 14px; position: relative; }
+  .col.input { background: #f6fbf7; border-color: #c4e5cd; }
+  .col.engine { background: #fbfbfe; border-color: #cdd6ee; border-style: dashed; }
+  .col.output { background: #fff7f9; border-color: #f2c9d7; }
+
+  .col-title { font-size: 13px; font-weight: 650; margin-bottom: 1px; }
+  .col-eng { font-size: 8px; letter-spacing: .13em; font-weight: 600; opacity: .6; margin-bottom: 11px; }
+  .input .col-title, .input .col-eng { color: #247a4d; }
+  .engine .col-title, .engine .col-eng { color: #3457b8; }
+  .output .col-title, .output .col-eng { color: #b8375f; }
+
+  .box {
+    background: #fff; border: 1px solid #e7e9ed; border-radius: 9px;
+    padding: 8px 9px; margin-bottom: 7px;
+  }
+  .box:last-child { margin-bottom: 0; }
+  .box b { display: block; font-size: 11px; font-weight: 620; color: #232326; margin-bottom: 3px; }
+  .box span { display: block; font-size: 9.2px; line-height: 1.55; color: #8a8a90; }
+  .box.tint-blue { background: #f5f8ff; border-color: #d9e3fb; }
+  .box.tint-green { background: #f3faf5; border-color: #d5ebdc; }
+  .box.tint-purple { background: #faf6ff; border-color: #e4d9f7; }
+  .box.tint-pink { background: #fff5f8; border-color: #f5d8e3; }
+
+  .icon-row { display: flex; justify-content: center; gap: 26px; margin: 2px 0 10px; }
+  .icon {
+    width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+    font-size: 12px; color: #fff; font-weight: 700;
+  }
+  .i1 { background: #6f8fe0; } .i2 { background: #7b6fd6; } .i3 { background: #47a97a; }
+
+  .lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .lane-head {
+    text-align: center; font-size: 10.5px; font-weight: 650; color: #33364a;
+    padding: 6px 4px; border-radius: 8px; background: #eef1fb; border: 1px solid #dfe5f7; margin-bottom: 7px;
+  }
+  .lane-head small { display: block; font-size: 8px; font-weight: 500; opacity: .65; letter-spacing: .04em; margin-top: 2px; }
+  .lane .box { text-align: center; padding: 7px 5px; }
+  .lane .box b { font-size: 10px; }
+  .lane .box span { font-size: 8.6px; }
+
+  .runtime {
+    margin-top: 10px; border-radius: 10px; border: 1px solid #f0d6a8;
+    background: linear-gradient(180deg, #fff8ea, #fff3dc);
+    padding: 9px 12px; text-align: center;
+  }
+  .runtime b { font-size: 11.5px; color: #a35f12; letter-spacing: .01em; }
+  .runtime span { display: block; margin-top: 3px; font-size: 9px; color: #a98145; line-height: 1.5; }
+  .runtime-note { text-align: center; font-size: 8.6px; color: #9a9aa0; margin-top: 7px; line-height: 1.6; }
+
+  .flow-arrow {
+    position: absolute; top: 47%; font-size: 17px; color: #9aa0ac; font-weight: 600; z-index: 3;
+    background: #fafbfc; padding: 2px 0; line-height: 1;
+  }
+  .a1 { left: 216px; } .a2 { right: 234px; }
+  .updown { text-align: center; color: #d99b3c; font-size: 12px; letter-spacing: 3px; margin: 6px 0 3px; }
+
+  .legend { display: flex; justify-content: center; gap: 26px; margin-top: 15px; font-size: 9px; color: #86868b; }
+  .legend i { display: inline-block; width: 20px; height: 0; border-top: 1.5px solid #7d8694; vertical-align: middle; margin-right: 6px; }
+  .legend .dash { border-top-style: dashed; }
+  .legend .fb { border-top: 1.5px solid #e0a54a; }
+  .caption { text-align: center; font-size: 9px; color: #9a9aa0; margin-top: 8px; }
+
+  .pill { display: inline-block; border-radius: 999px; padding: 1px 7px; font-size: 8.5px; font-weight: 600; }
+  .pill.g { background: #e6f5eb; color: #247a4d; }
+  .pill.b { background: #eaf0ff; color: #3457b8; }
+  .pill.p { background: #fdeef3; color: #b8375f; }
+
+  .persist { margin-top: 11px; border-top: 1px dashed #e2e6f2; padding-top: 10px; }
+  .persist-title { text-align: center; font-size: 9.5px; font-weight: 650; color: #6b7392; margin-bottom: 8px; }
+  .chips { display: flex; justify-content: center; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+  .chip { border: 1px solid #dfe4f2; background: #fff; border-radius: 999px; padding: 3px 9px; font-size: 8.4px; color: #5b6488; }
+  .persist-note { text-align: center; font-size: 8.5px; color: #9a9aa0; line-height: 1.65; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>GEO AI Agent · 系统框架</h1>
+  <div class="subtitle">企业级 AI 可见度增长系统 · 诊断 / 资产 / 内容 / 分发 / 复盘 · React + Vite / Express + node:sqlite / pi CLI</div>
+
+  <div class="frame">
+    <span class="flow-arrow a1">→</span>
+    <span class="flow-arrow a2">→</span>
+
+    <!-- 左：输入与数据层 -->
+    <section class="col input">
+      <div class="col-title">输入与数据层</div>
+      <div class="col-eng">INPUT &amp; DATA</div>
+
+      <div class="box tint-blue">
+        <b>用户 / 品牌建档</b>
+        <span>向导录入名称、城市、行业、别名、门店与竞品；4 角色 RBAC 登录</span>
+      </div>
+      <div class="box">
+        <b>知识库文档 · RAG</b>
+        <span>PDF / DOCX / MD / 图片 → 抽取切片 → BM25 中文检索<br>当前 8 份文档 · 117 个切片</span>
+      </div>
+      <div class="box">
+        <b>事实卡 · Facts</b>
+        <span>唯一口径，含冲突检测与归档<br>20 条（生效 16 / 冲突 4）</span>
+      </div>
+      <div class="box">
+        <b>提问矩阵 · Prompts</b>
+        <span>46 条提问，覆盖认知 / 比较 / 决策 / 口碑 / 本地</span>
+      </div>
+      <div class="box">
+        <b>C 端取证 · 人工粘贴</b>
+        <span>真实 AI 答案原文 + 截图，A 级证据，双轨指标 aviCend</span>
+      </div>
+      <div class="box">
+        <b>SEO / 站点数据源</b>
+        <span>site 真抓 · live 搜索 API（可选 Key）<br>manual 站长平台导入 / 人工核查</span>
+      </div>
+      <div class="box tint-green">
+        <b>配置与持久化</b>
+        <span>server/.env（6 家模型 Key / SerpAPI / 定时开关）<br>geo.db · SQLite WAL · 30 张表 · 单机落库</span>
+      </div>
+    </section>
+
+    <!-- 中：引擎与编排层 -->
+    <section class="col engine">
+      <div class="col-title">引擎与编排层</div>
+      <div class="col-eng">ENGINE &amp; ORCHESTRATION</div>
+
+      <div class="icon-row">
+        <div class="icon i1">诊</div><div class="icon i2">写</div><div class="icon i3">发</div>
+      </div>
+
+      <div class="lanes">
+        <div class="lane">
+          <div class="lane-head">诊断与探测<small>DIAGNOSIS &amp; PROBE</small></div>
+          <div class="box tint-blue"><b>提问生成 / 意图分层</b><span>按行业与竞品生成真实问法</span></div>
+          <div class="box tint-blue"><b>6 平台探测适配器</b><span>超时 · 重试 · 错误分类<br>live / mock 双通道</span></div>
+          <div class="box tint-blue"><b>答案解析</b><span>提及、位次、竞品、准确度</span></div>
+          <div class="box tint-blue"><b>AVI / BRA / SoV</b><span>aviModel 与 aviCend 双轨<br>四象限归因</span></div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-head">知识与内容<small>KNOWLEDGE &amp; CONTENT</small></div>
+          <div class="box tint-purple"><b>BM25 检索 + 上下文</b><span>命中片段注入写作提示词</span></div>
+          <div class="box tint-purple"><b>模板渲染</b><span>按意图写不同分析段落<br>引用企业资料要点</span></div>
+          <div class="box tint-purple"><b>pi 智能体 SSE 写作</b><span>子进程调 pi CLI · DeepSeek<br>stage / thinking / text / saved</span></div>
+          <div class="box tint-purple"><b>事实回比 · 合规 · 配图</b><span>无出处数字提示 · 禁用词拦截<br>SVG 数据图 · GEOS 六维评分</span></div>
+        </div>
+
+        <div class="lane">
+          <div class="lane-head">分发与复盘<small>DISTRIBUTION &amp; REVIEW</small></div>
+          <div class="box tint-green"><b>媒体库 / 订单 / 代投</b><span>人工接单 · 回填发布链接</span></div>
+          <div class="box tint-green"><b>发布排期</b><span>养号知识 + GEO 穿插<br>只落计划、不代发</span></div>
+          <div class="box tint-green"><b>链接资产台账</b><span>去重同步 · 真实 HTTP 巡检<br>引用次数按域名回溯</span></div>
+          <div class="box tint-green"><b>SEO / 站点体检</b><span>9 项可索引性 · 曝光率<br>关键词位次历史 · 定时扫描</span></div>
+        </div>
+      </div>
+
+      <div class="updown">↕ &nbsp; ↕ &nbsp; ↕</div>
+      <div class="runtime">
+        <b>共享运行时 · GEO Runtime</b>
+        <span>Express 70+ API 路由 · 品牌隔离 / 审计日志 · node:sqlite 30 表 · React 19 / Vite 20 条路由 · pi CLI 智能体</span>
+      </div>
+      <div class="runtime-note">所有写操作经鉴权与品牌隔离；未配置 Key 时明确标注「模拟 / 未检测」，不把模拟结果冒充实测</div>
+
+      <div class="persist">
+        <div class="persist-title">数据落库与回流</div>
+        <div class="chips">
+          <span class="chip">probe_results</span><span class="chip">contents</span>
+          <span class="chip">publish_plans</span><span class="chip">link_assets</span>
+          <span class="chip">seo_results</span><span class="chip">metrics_daily</span>
+        </div>
+        <div class="persist-note">编排层只产出中间结果，全部回写 geo.db；复盘看板、内容再生成与链接巡检复用同一份数据，不做二次编造。</div>
+      </div>
+    </section>
+
+    <!-- 右：输出与产物层 -->
+    <section class="col output">
+      <div class="col-title">输出与产物层</div>
+      <div class="col-eng">OUTPUT &amp; ARTIFACTS</div>
+
+      <div class="box tint-pink">
+        <b>AI 可见度诊断报告</b>
+        <span>AVI / SoV / 提及率 · 四象限归因 · 30 天增长建议</span>
+      </div>
+      <div class="box">
+        <b>GEO 文章</b>
+        <span>Markdown 正文 · 事实表 · Q&amp;A · 数据来源<br>HTML 单文件导出 / 内联配图</span>
+      </div>
+      <div class="box">
+        <b>发布排期计划</b>
+        <span>周视图 · 养号 / 穿插阶段标记<br>回填链接后同步台账</span>
+      </div>
+      <div class="box">
+        <b>链接资产台账</b>
+        <span>发布 URL · 存活状态 · HTTP 状态码<br>巡检历史 · 被引用次数</span>
+      </div>
+      <div class="box">
+        <b>SEO 曝光率看板</b>
+        <span>曝光率 / 收录 / 展现点击<br>关键词位次与历史 · 缺口清单</span>
+      </div>
+      <div class="box">
+        <b>监测与复盘</b>
+        <span>AVI 趋势 · 竞品对比 · 信源矩阵 · 归因漏斗</span>
+      </div>
+      <div class="box tint-pink">
+        <b>可导出交付物</b>
+        <span>llms.txt / robots / sitemap / JSON-LD<br>CSV · JSON · PNG · HTML</span>
+      </div>
+      <div style="margin-top:9px;font-size:8.6px;line-height:1.6;color:#b07a8d;text-align:center;">
+        数据可回溯 · 来源标注<br>模拟与实测分离 · 养号不计入指标
+      </div>
+    </section>
+  </div>
+
+  <div class="legend">
+    <span><i></i>主流程 / 数据流</span>
+    <span><i class="dash"></i>辅助控制 / 可选通道</span>
+    <span><i class="fb"></i>交互 / 反馈回流</span>
+  </div>
+  <div class="caption">图 1　GEO AI Agent 系统框架（单机可运行：前端 3001 / 后端 8002；真实模型与搜索排名需配置 API Key）</div>
+</div>
+</body>
+</html>

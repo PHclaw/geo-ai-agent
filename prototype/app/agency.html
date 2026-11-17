@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>客户与白标 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .client-switch {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 12px 7px 8px; border-radius: 980px;
+    border: 1px solid var(--hair); background: #fff; cursor: pointer;
+    transition: all .2s var(--ease);
+  }
+  .client-switch:hover { border-color: rgba(0,113,227,.4); }
+  .client-switch .lg {
+    width: 24px; height: 24px; border-radius: 7px; flex: none;
+    background: linear-gradient(145deg, #7ac1ff, #0071e3 55%, #5e5ce6);
+    color: #fff; font-size: 10px; font-weight: 600;
+    display: grid; place-items: center;
+  }
+  .client-switch .nm3 { font-size: 12.5px; font-weight: 500; }
+  .client-switch .sb { font-size: 10.5px; color: var(--ink-3); }
+
+  .brand-preview {
+    border-radius: 14px; border: 1px solid var(--hair); overflow: hidden;
+  }
+  .brand-preview .top {
+    padding: 16px 18px; color: #fff;
+    background: linear-gradient(135deg, var(--bc, #0071e3), #1d1d1f);
+  }
+  .brand-preview .top .lgx {
+    width: 30px; height: 30px; border-radius: 9px; background: rgba(255,255,255,.22);
+    display: grid; place-items: center; font-size: 11px; font-weight: 600; margin-bottom: 12px;
+  }
+  .brand-preview .top h4 { margin: 0; font-size: 15px; letter-spacing: -.02em; }
+  .brand-preview .top p { margin: 4px 0 0; font-size: 10.5px; opacity: .72; }
+  .brand-preview .body2 { padding: 12px 14px; font-size: 10.5px; color: var(--ink-3); line-height: 1.7; }
+
+  .swatches { display: flex; gap: 7px; flex-wrap: wrap; }
+  .swatch {
+    width: 26px; height: 26px; border-radius: 8px; cursor: pointer;
+    border: 2px solid transparent; transition: all .2s var(--ease);
+  }
+  .swatch.on { border-color: #1d1d1f; transform: scale(1.06); }
+
+  .upload-tile {
+    height: 74px; border-radius: 11px; border: 1px dashed var(--hair);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-size: 10.5px; color: var(--ink-3); cursor: pointer; background: #fbfbfc;
+  }
+  .upload-tile:hover { background: #f7f7f8; border-color: rgba(0,113,227,.4); color: var(--accent); }
+
+  .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+</style>
+</head>
+<body data-page="agency" data-title="客户与白标" data-crumb="服务商控制台 › 23 个客户">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <div class="row" style="margin-bottom:14px">
+        <div class="client-switch" data-toast="客户切换器（原型演示）：支持按名称/行业/到期时间筛选">
+          <span class="lg">全</span>
+          <div>
+            <div class="nm3">全部客户</div>
+            <div class="sb">23 个客户 · 41 个品牌</div>
+          </div>
+          <span style="color:var(--ink-3);font-size:10px;margin-left:4px">▾</span>
+        </div>
+        <div class="push row">
+          <button class="btn" data-toast="已批量生成 23 份月报（白标，排队中）">批量出报告</button>
+          <button class="btn" data-toast="已批量触发 23 个客户的巡检任务">批量复测</button>
+          <button class="btn primary" data-toast="已新建客户，进入建档向导">+ 新建客户</button>
+        </div>
+      </div>
+
+      <section class="grid g4">
+        <div class="kpi">
+          <div class="label">客户数</div>
+          <div class="val">23<small>个</small></div>
+          <div class="foot"><span class="delta up">▲ 3</span><span class="sub">本月新增</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">管理品牌 / 门店</div>
+          <div class="val">41<small>/ 96</small></div>
+          <div class="foot"><span class="delta up">▲ 6</span><span class="sub">跨 7 个行业</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">本月代投金额</div>
+          <div class="val">18.6<small>万</small></div>
+          <div class="foot"><span class="delta up">▲ 22%</span><span class="sub">毛利率 31%</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">续费预警</div>
+          <div class="val">3<small>个</small></div>
+          <div class="foot"><span class="delta down">30 天内到期</span><span class="sub">建议本周跟进</span></div>
+        </div>
+      </section>
+
+      <section class="split-l mt18" style="grid-template-columns: minmax(0, 1fr) 320px">
+        <div class="card flush">
+          <div class="card-hd">
+            <div>
+              <h2>客户列表</h2>
+              <div class="sub">点击客户进入其工作台；AVI 为该客户主品牌的当前值</div>
+            </div>
+            <div class="seg"><button class="on">全部 23</button><button>续费预警 3</button><button>暂停 1</button></div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>客户</th><th>套餐</th><th>品牌</th><th>AVI</th><th>本月内容</th><th class="r">投放预算</th><th>状态</th><th>到期</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">和序装饰 <span class="badge info" style="margin-left:5px">主客户</span></td>
+                  <td><span class="badge purple">旗舰代运营</span></td>
+                  <td class="num">1 / 4</td>
+                  <td class="strong">34</td>
+                  <td class="num">38 篇</td>
+                  <td class="r strong">¥8,600</td>
+                  <td><span class="badge ok">服务中</span></td>
+                  <td class="num">2027-03</td>
+                  <td class="r"><a class="link" href="dashboard.html">进入</a></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">栖岸设计</td>
+                  <td><span class="badge purple">旗舰代运营</span></td>
+                  <td class="num">1 / 2</td>
+                  <td class="strong">61</td>
+                  <td class="num">26 篇</td>
+                  <td class="r strong">¥12,400</td>
+                  <td><span class="badge ok">服务中</span></td>
+                  <td class="num">2026-12</td>
+                  <td class="r"><span class="link">进入</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">蜀禾 · 川小馆</td>
+                  <td><span class="badge">成长版</span></td>
+                  <td class="num">1 / 12</td>
+                  <td class="strong">47</td>
+                  <td class="num">18 篇</td>
+                  <td class="r strong">¥3,200</td>
+                  <td><span class="badge warn">续费预警</span></td>
+                  <td class="num">2026-11</td>
+                  <td class="r"><span class="link">跟进</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">木言空间</td>
+                  <td><span class="badge">成长版</span></td>
+                  <td class="num">1 / 1</td>
+                  <td class="strong">52</td>
+                  <td class="num">15 篇</td>
+                  <td class="r strong">¥2,600</td>
+                  <td><span class="badge ok">服务中</span></td>
+                  <td class="num">2027-02</td>
+                  <td class="r"><span class="link">进入</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">连云装饰</td>
+                  <td><span class="badge">启动版</span></td>
+                  <td class="num">1 / 1</td>
+                  <td class="strong">29</td>
+                  <td class="num">6 篇</td>
+                  <td class="r strong">¥0</td>
+                  <td><span class="badge warn">续费预警</span></td>
+                  <td class="num">2026-11</td>
+                  <td class="r"><span class="link">跟进</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">青禾口腔（连锁）</td>
+                  <td><span class="badge purple">旗舰代运营</span></td>
+                  <td class="num">1 / 9</td>
+                  <td class="strong">58</td>
+                  <td class="num">31 篇</td>
+                  <td class="r strong">¥15,800</td>
+                  <td><span class="badge ok">服务中</span></td>
+                  <td class="num">2027-05</td>
+                  <td class="r"><span class="link">进入</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#ag1">
+                  <td class="name">启明教育</td>
+                  <td><span class="badge">成长版</span></td>
+                  <td class="num">1 / 3</td>
+                  <td class="strong">21</td>
+                  <td class="num">0 篇</td>
+                  <td class="r strong">¥0</td>
+                  <td><span class="badge">暂停</span></td>
+                  <td class="num">2026-11</td>
+                  <td class="r"><span class="link">查看</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row" style="padding:12px 18px;border-top:1px solid var(--hair)">
+            <span class="sub">显示 7 / 23</span>
+            <span class="push sub">数据截止今天 09:12</span>
+          </div>
+        </div>
+
+        <!-- 白标设置 -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>白标设置</h3>
+              <span class="badge ok">已启用</span>
+            </div>
+            <div class="card-bd" style="padding:14px 0 0">
+              <div class="brand-preview">
+                <div class="top" id="brandTop">
+                  <div class="lgx">拓</div>
+                  <h4>拓野数字营销</h4>
+                  <p>AI 可见度增长报告 · 2026 年 10 月</p>
+                </div>
+                <div class="body2">本报告由拓野数字营销 提供，数据来源为公开 AI 平台回答采样。</div>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="sub" style="margin-bottom:7px">品牌 Logo</div>
+              <div class="row" style="gap:8px; align-items:stretch">
+                <div class="upload-tile" style="flex:1" data-toast="原型演示：仅支持 PNG / SVG，建议 2 倍图">上传 Logo</div>
+                <div class="upload-tile" style="flex:1" data-toast="已恢复默认图标">使用文字标</div>
+              </div>
+
+              <div class="sub" style="margin:14px 0 7px">主题色</div>
+              <div class="swatches" id="swatches">
+                <span class="swatch on" data-c="#0071e3" style="background:#0071e3"></span>
+                <span class="swatch" data-c="#1d9d5a" style="background:#1d9d5a"></span>
+                <span class="swatch" data-c="#b25000" style="background:#b25000"></span>
+                <span class="swatch" data-c="#5e5ce6" style="background:#5e5ce6"></span>
+                <span class="swatch" data-c="#1d1d1f" style="background:#1d1d1f"></span>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="cap-row"><span style="font-size:12px">报告自定义域名</span><span class="badge">report.tuoye.cn</span></div>
+              <div class="cap-row"><span style="font-size:12px">隐藏平台品牌</span><span class="switch on push" role="switch" aria-checked="true" aria-label="隐藏平台品牌"></span></div>
+              <div class="cap-row"><span style="font-size:12px">允许客户自行下单</span><span class="switch push" role="switch" aria-checked="false" aria-label="允许客户自行下单"></span></div>
+              <div class="cap-row"><span style="font-size:12px">代理返点</span><span class="sub">25%</span></div>
+
+              <button class="btn primary block mt12" data-toast="白标设置已保存，报告模板将重新渲染">保存设置</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>待办与风险</h3><span class="badge warn">4</span></div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="li"><span class="lead a">续</span><div class="txt"><div class="t1">3 个客户 30 天内到期</div><div class="t2">蜀禾、连云、启明</div></div></div>
+              <div class="li"><span class="lead a">审</span><div class="txt"><div class="t1">12 篇内容待平台复审</div><div class="t2">医疗类需额外资质</div></div></div>
+              <div class="li"><span class="lead n">回</span><div class="txt"><div class="t1">2 条发布链接待回传</div><div class="t2">影响供应商评分</div></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 客户健康度 -->
+      <section class="card flush mt18">
+        <div class="card-hd">
+          <div><h2>客户健康度</h2><div class="sub">按 AVI 提升幅度与内容履约率排序，识别可续费与流失风险</div></div>
+          <span class="badge">近 30 天</span>
+        </div>
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <thead><tr><th>客户</th><th>AVI 变化</th><th>内容履约</th><th>投放履约</th><th>续费概率</th><th>建议动作</th></tr></thead>
+            <tbody>
+              <tr><td class="name">青禾口腔</td><td><span class="delta up">▲ 18.2</span></td><td class="num">100%</td><td class="num">96%</td><td><span class="badge ok">高</span></td><td>推荐升级旗舰版</td></tr>
+              <tr><td class="name">栖岸设计</td><td><span class="delta up">▲ 9.4</span></td><td class="num">94%</td><td class="num">100%</td><td><span class="badge ok">高</span></td><td>追加行业大 V</td></tr>
+              <tr><td class="name">和序装饰</td><td><span class="delta up">▲ 12.4</span></td><td class="num">88%</td><td class="num">92%</td><td><span class="badge ok">高</span></td><td>补齐信源缺口</td></tr>
+              <tr><td class="name">连云装饰</td><td><span class="delta down">▼ 2.1</span></td><td class="num">40%</td><td class="num">—</td><td><span class="badge bad">低</span></td><td>上门复盘，重定目标</td></tr>
+              <tr><td class="name">启明教育</td><td><span class="delta flat">— 0</span></td><td class="num">0%</td><td class="num">—</td><td><span class="badge bad">低</span></td><td>确认是否继续（合规限制）</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="drawer" id="ag1" role="dialog" aria-label="客户概览">
+  <div class="drawer-hd">
+    <div>
+      <h3>和序装饰</h3>
+      <div class="sub">旗舰代运营 · 1 个品牌 / 4 家门店 · 服务期至 2027-03</div>
+    </div>
+    <button class="drawer-close" data-close-drawer aria-label="关闭">✕</button>
+  </div>
+
+  <div class="row mt12">
+    <span class="badge ok">服务中</span>
+    <span class="badge info">AVI 34（+12.4）</span>
+    <span class="badge">近 30 天内容 38 篇</span>
+  </div>
+
+  <div class="grid g2 mt18">
+    <div class="card" style="padding:14px">
+      <div class="sub">本月投放</div>
+      <div style="font-size:20px;font-weight:600;letter-spacing:-.03em">¥8,600</div>
+      <div class="bar thin mt6"><i data-w="72"></i></div>
+      <div class="sub mt6">预算使用 72%</div>
+    </div>
+    <div class="card" style="padding:14px">
+      <div class="sub">线索</div>
+      <div style="font-size:20px;font-weight:600;letter-spacing:-.03em">128</div>
+      <div class="bar thin mt6"><i class="green" data-w="64"></i></div>
+      <div class="sub mt6">AI 渠道 37 · CPL ¥232</div>
+    </div>
+  </div>
+
+  <div class="mt18">
+    <div class="sub" style="margin-bottom:8px">服务项</div>
+    <div class="check"><span class="dot">✓</span><div class="txt"><b>知识库维护</b><div class="code">113 条事实卡 · 1 处冲突待客户确认</div></div></div>
+    <div class="check"><span class="dot">✓</span><div class="txt"><b>内容生产</b><div class="code">38 / 60 篇 · GEOS 均分 84</div></div></div>
+    <div class="check warn"><span class="dot">!</span><div class="txt"><b>媒体分发</b><div class="code">12 家 · 2 条链接待回传</div></div></div>
+    <div class="check"><span class="dot">✓</span><div class="txt"><b>月报</b><div class="code">9 月已交付 · 10 月 1 日生成</div></div></div>
+  </div>
+
+  <div class="row mt18">
+    <a class="btn primary" href="dashboard.html">进入该客户工作台</a>
+    <button class="btn" data-toast="已生成白标月报（PDF）">生成白标报告</button>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+<script>
+  (function () {
+    var top = document.getElementById("brandTop");
+    document.getElementById("swatches").addEventListener("click", function (e) {
+      var s = e.target.closest(".swatch");
+      if (!s) return;
+      Array.prototype.forEach.call(this.querySelectorAll(".swatch"), function (x) { x.classList.remove("on"); });
+      s.classList.add("on");
+      top.style.setProperty("--bc", s.getAttribute("data-c"));
+      window.geoToast("主题色已应用（" + s.getAttribute("data-c") + "）");
+    });
+  })();
+</script>
+</body>
+</html>

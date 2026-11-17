@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* ============================================================
+   GEO AI Agent — Design Tokens（与 HTML 原型同一套）
+   Apple 风格：单一强调色、发丝线、无重阴影、克制动效
+   ============================================================ */
+@theme {
+  --color-bg: #f5f5f7;
+  --color-surface: #ffffff;
+  --color-surface2: #fafafb;
+  --color-ink: #1d1d1f;
+  --color-ink2: #6e6e73;
+  --color-ink3: #86868b;
+  --color-hair: rgba(0, 0, 0, 0.08);
+  --color-hair2: #f2f2f4;
+  --color-accent: #0071e3;
+  --color-accent2: #5e5ce6;
+  --color-good: #1d9d5a;
+  --color-bad: #d70015;
+  --color-warn: #b25000;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+
+  --radius-card: 16px;
+  --radius-sm: 10px;
+
+  --ease-apple: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  @apply bg-bg text-ink font-sans antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+  letter-spacing: -0.008em;
+}
+
+::selection {
+  background: rgba(0, 113, 227, 0.16);
+}
+
+/* 表格数字对齐 */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 卡片入场 */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.enter {
+  animation: fadeUp 0.5s var(--ease-apple) both;
+}
+
+/* 滚动条（桌面） */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.14);
+  border-radius: 9999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.24);
+  background-clip: content-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}

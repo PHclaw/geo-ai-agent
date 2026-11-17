@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>官网建站 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .tpl {
+    border: 1px solid var(--hair); border-radius: 10px; overflow: hidden; cursor: pointer;
+    transition: border-color .25s var(--ease), transform .25s var(--ease);
+  }
+  .tpl:hover { transform: translateY(-2px); border-color: rgba(0,113,227,.45); }
+  .tpl.on { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(0,113,227,.14); }
+  .tpl .sk { height: 62px; background: #f5f5f7; padding: 7px; display: flex; flex-direction: column; gap: 4px; }
+  .tpl .sk i { display: block; border-radius: 3px; background: #e2e2e6; }
+  .tpl .sk i.a { height: 8px; width: 46%; background: #cfcfd6; }
+  .tpl .sk i.b { height: 4px; width: 68%; }
+  .tpl .sk i.c { height: 4px; width: 54%; }
+  .tpl .sk i.d { height: 18px; margin-top: auto; border-radius: 4px; background: #dcdce2; }
+  .tpl .lb { padding: 6px 8px; font-size: 10.5px; color: var(--ink-2); border-top: 1px solid var(--hair); }
+  .page-list a {
+    display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 8px;
+    border-radius: 8px; font-size: 12px; color: #3a3a3c;
+  }
+  .page-list a:hover { background: rgba(0,0,0,.04); }
+  .page-list a.on { background: #f1f1f3; font-weight: 500; color: #000; }
+  .page-list a .st { margin-left: auto; font-size: 10px; color: var(--ink-3); }
+</style>
+</head>
+<body data-page="site" data-title="官网建站" data-crumb="和序装饰 › 企业资产 › 官网">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <div class="row" style="margin-bottom:14px">
+        <span class="badge ok"><span class="d"></span>已发布</span>
+        <span class="mono">hexu-design.com</span>
+        <span class="badge info">HTTPS 正常</span>
+        <span class="sub">上次发布 3 天前 · 由 4 个页面组成</span>
+        <div class="push row">
+          <button class="btn" data-toast="已在新窗口打开：https://hexu-design.com">预览站点</button>
+          <button class="btn" data-toast="已重新生成 sitemap 与 llms.txt">重建结构化文件</button>
+          <button class="btn primary" data-toast="已提交发布，预计 60 秒内生效">发布更新</button>
+        </div>
+      </div>
+
+      <section class="split-l">
+        <!-- 左：模板 + 页面 -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>模板</h3><span class="sub">行业：家装</span></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="stack" style="gap:8px">
+                <div class="tpl on">
+                  <div class="sk"><i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i></div>
+                  <div class="lb">专业服务型（当前）</div>
+                </div>
+                <div class="tpl">
+                  <div class="sk"><i class="a" style="width:60%"></i><i class="d" style="height:26px"></i><i class="b"></i></div>
+                  <div class="lb">案例导向型</div>
+                </div>
+                <div class="tpl">
+                  <div class="sk"><i class="b"></i><i class="c"></i><i class="a" style="margin-top:auto"></i></div>
+                  <div class="lb">门店本地型</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>页面</h3><button class="btn sm" data-toast="已新建空白页面">+</button></div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="page-list">
+                <a href="#" class="on">首页 <span class="st">已发布</span></a>
+                <a href="#">门店（4） <span class="st">2 待更新</span></a>
+                <a href="#">产品与服务 <span class="st">已发布</span></a>
+                <a href="#">常见问题 <span class="st">已发布</span></a>
+                <a href="#">案例 <span class="st">草稿</span></a>
+                <a href="#">关于我们 <span class="st">已发布</span></a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>域名</h3></div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="sub">自定义域名已接入（CNAME）</div>
+              <div class="row mt6">
+                <span class="mono">hexu-design.com</span>
+                <span class="badge ok">有效</span>
+              </div>
+              <div class="divider"></div>
+              <div class="row"><span class="sub">百度主动推送</span><span class="switch on push" role="switch" aria-checked="true" aria-label="百度主动推送"></span></div>
+              <div class="row mt6"><span class="sub">AI 爬虫允许抓取</span><span class="switch on push" role="switch" aria-checked="true" aria-label="AI 爬虫允许抓取"></span></div>
+              <div class="row mt6"><span class="sub">llms.txt</span><span class="switch on push" role="switch" aria-checked="true" aria-label="llms.txt"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右：预览 + 检查 -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>首页预览</h3>
+              <div class="row">
+                <div class="seg"><button class="on">桌面</button><button>移动</button></div>
+                <a class="link sub" href="site.html">编辑内容</a>
+              </div>
+            </div>
+            <div class="card-bd" style="padding:12px 0 0">
+              <div class="browser">
+                <div class="browser-bar">
+                  <span class="d"></span><span class="d"></span><span class="d"></span>
+                  <span class="url">https://hexu-design.com</span>
+                </div>
+                <div class="preview-body">
+                  <div class="mini-hero">
+                    <div class="eb">Nanjing · Since 2012</div>
+                    <h4>把老房子，<br />改造成想要的生活。</h4>
+                    <p>住宅整装 · 老房翻新 · 局部改造 ｜ 南京主城 4 家门店</p>
+                    <div class="row" style="justify-content:center;margin-top:10px;gap:6px">
+                      <span class="badge info" style="font-size:9px;height:18px">预约量房</span>
+                      <span class="badge" style="font-size:9px;height:18px">查看报价</span>
+                    </div>
+                  </div>
+                  <div class="mini-grid">
+                    <div></div><div></div><div></div>
+                  </div>
+                  <div style="margin-top:12px;padding:10px;border-radius:8px;background:#fafafb;border:1px solid var(--hair-2)">
+                    <div style="font-size:9px;font-weight:600;margin-bottom:6px">常见问题</div>
+                    <div style="font-size:8px;color:#86868b;line-height:1.7">
+                      Q：老房翻新一般多少钱？<br />
+                      Q：全包和半包怎么选？<br />
+                      Q：工期多久，能不能边住边改？
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0">
+              <h3>GEO 结构化检查</h3>
+              <span class="badge ok">9 / 10 通过</span>
+            </div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="check"><span class="dot">✓</span><div class="txt"><b>Organization 结构化数据</b><div class="code">JSON-LD · 名称、Logo、联系方式、地址</div></div></div>
+              <div class="check"><span class="dot">✓</span><div class="txt"><b>LocalBusiness（4 个门店）</b><div class="code">含 address / openingHours / geo</div></div></div>
+              <div class="check"><span class="dot">✓</span><div class="txt"><b>FAQPage</b><div class="code">12 组问答，与知识库同源</div></div></div>
+              <div class="check"><span class="dot">✓</span><div class="txt"><b>sitemap.xml / robots.txt</b><div class="code">已提交百度、必应、Google</div></div></div>
+              <div class="check"><span class="dot">✓</span><div class="txt"><b>llms.txt</b><div class="code">声明站点结构、核心实体与可引用段落</div></div></div>
+              <div class="check"><span class="dot">✓</span><div class="txt"><b>服务端渲染（SSR）</b><div class="code">正文不依赖 JS，爬虫可完整读取</div></div></div>
+              <div class="check warn"><span class="dot">!</span><div class="txt"><b>门店页 3 已过期</b><div class="code">河西店营业时间与知识库不一致</div></div><a class="link sub push" href="knowledge.html">修复</a></div>
+            </div>
+          </div>
+
+          <div class="grid g3">
+            <div class="card">
+              <div class="label sub">LCP</div>
+              <div style="font-size:20px;font-weight:600;letter-spacing:-.03em">1.4<span style="font-size:11px;color:var(--ink-3)">s</span></div>
+              <div class="bar thin mt6"><i class="green" data-w="88"></i></div>
+            </div>
+            <div class="card">
+              <div class="label sub">可抓取页面</div>
+              <div style="font-size:20px;font-weight:600;letter-spacing:-.03em">18</div>
+              <div class="bar thin mt6"><i data-w="100"></i></div>
+            </div>
+            <div class="card">
+              <div class="label sub">AI 引用本站在</div>
+              <div style="font-size:20px;font-weight:600;letter-spacing:-.03em">3<span style="font-size:11px;color:var(--ink-3)">个平台</span></div>
+              <div class="bar thin mt6"><i class="amber" data-w="38"></i></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+<script src="assets/app.js"></script>
+</body>
+</html>

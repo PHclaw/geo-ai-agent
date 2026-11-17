@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>内容创作 · GEO AI Agent</title>
+<link rel="stylesheet" href="assets/app.css" />
+<style>
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .field label { font-size: 11px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+  .field select, .field input {
+    height: 32px; border-radius: 9px; border: 1px solid var(--hair); background: #fff;
+    padding: 0 10px; font: inherit; font-size: 12.5px; color: var(--ink); outline: none;
+    -webkit-appearance: none; appearance: none;
+  }
+  .field select:focus, .field input:focus { border-color: rgba(0,113,227,.6); box-shadow: 0 0 0 3px rgba(0,113,227,.12); }
+  .mini-tag { font-size: 10px; color: var(--ink-3); letter-spacing: 0; }
+  .art { font-size: 12.5px; line-height: 1.75; color: #2b2b2e; }
+  .art h4 { margin: 0 0 8px; font-size: 15px; letter-spacing: -.02em; }
+  .art .lead-p { margin: 0 0 12px; color: #1d1d1f; }
+  .art .qa { padding: 10px 12px; border-radius: 10px; background: #fafafb; border: 1px solid var(--hair-2); margin-bottom: 8px; }
+  .art .qa b { display: block; font-weight: 600; margin-bottom: 3px; }
+</style>
+</head>
+<body data-page="content" data-title="内容创作" data-crumb="和序装饰 › 内容 › 内容工厂">
+<div class="layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main">
+    <header class="topbar" id="topbar"></header>
+
+    <main class="content">
+
+      <section class="grid g4">
+        <div class="kpi">
+          <div class="label">本月已生成</div>
+          <div class="val">38<small>篇</small></div>
+          <div class="foot"><span class="delta up">▲ 12</span><span class="sub">配额 60 篇</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">GEOS 均分</div>
+          <div class="val">84<small>/100</small></div>
+          <div class="foot"><span class="delta up">▲ 6</span><span class="sub">发布门槛 70</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">合规一次通过</div>
+          <div class="val">93<small>%</small></div>
+          <div class="foot"><span class="delta up">▲ 4 pt</span><span class="sub">2 篇因极限词被拦</span></div>
+        </div>
+        <div class="kpi">
+          <div class="label">内容被 AI 引用</div>
+          <div class="val">11<small>篇</small></div>
+          <div class="foot"><span class="delta up">▲ 3</span><span class="sub">引用率 29%</span></div>
+        </div>
+      </section>
+
+      <section class="split-l mt18">
+        <!-- 生成配置 -->
+        <div class="stack">
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>生成配置</h3><span class="badge info">微调模型</span></div>
+            <div class="card-bd" style="padding:14px 0 0">
+              <div class="field">
+                <label for="cat">体裁</label>
+                <select id="cat">
+                  <option>深度攻略</option>
+                  <option>Q&amp;A 问答</option>
+                  <option>对比评测</option>
+                  <option>价格清单</option>
+                  <option>本地指南</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cnt">数量</label>
+                <select id="cnt"><option>1 篇</option><option selected>10 篇（批量）</option><option>30 篇</option></select>
+              </div>
+              <div class="field">
+                <label for="goal">目标 Prompt</label>
+                <select id="goal">
+                  <option>南京装修公司哪家口碑比较好？（决策型 · 未上榜）</option>
+                  <option>南京老房翻新大概要多少钱？（决策型 · 前 3）</option>
+                  <option>全包和半包怎么选？（比较型 · 前 3）</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="sku">关联 SKU</label>
+                <select id="sku"><option>整装标准套餐 · 三居</option><option>老房翻新套餐 · 全拆改</option><option>不关联</option></select>
+              </div>
+              <div class="field">
+                <label for="fix">事实校验</label>
+                <select id="fix"><option>强校验（不一致则重写）</option><option>仅提示</option></select>
+              </div>
+
+              <div class="divider"></div>
+
+              <div class="row" style="justify-content:space-between">
+                <span class="sub">GEO 写作规范</span>
+                <span class="switch on" role="switch" aria-checked="true" aria-label="GEO 写作规范"></span>
+              </div>
+              <div class="row mt6" style="justify-content:space-between">
+                <span class="sub">广告法合规检查</span>
+                <span class="switch on" role="switch" aria-checked="true" aria-label="广告法合规检查"></span>
+              </div>
+              <div class="row mt6" style="justify-content:space-between">
+                <span class="sub">口径冲突阻断</span>
+                <span class="switch on" role="switch" aria-checked="true" aria-label="口径冲突阻断"></span>
+              </div>
+
+              <button class="btn primary block mt18" data-toast="已开始生成 10 篇，预计 6 分钟（任务中心可查看进度）">批量生成 10 篇</button>
+              <div class="sub mt6" style="text-align:center">预计耗时 6 分钟 · 消耗 10 篇配额</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-hd" style="padding:0"><h3>多模态</h3><span class="badge">V1.5</span></div>
+            <div class="card-bd" style="padding:10px 0 0">
+              <div class="li"><span class="lead b">图</span><div class="txt"><div class="t1">AI 配图 / 海报</div><div class="t2">品牌色板约束</div></div><button class="btn sm" data-toast="AI 图片于 V1.5 上线，当前可用素材库配图">体验</button></div>
+              <div class="li"><span class="lead p">人</span><div class="txt"><div class="t1">数字人口播</div><div class="t2">30 / 60 / 90 秒</div></div><button class="btn sm" data-toast="数字人于 V1.5 上线（需上传授权书）">体验</button></div>
+              <div class="li"><span class="lead a">视</span><div class="txt"><div class="t1">AI 宣传视频</div><div class="t2">模板化批量出片</div></div><button class="btn sm" data-toast="视频于 V2.0 上线">体验</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内容列表 -->
+        <div class="card flush">
+          <div class="card-hd">
+            <div>
+              <h2>内容列表</h2>
+              <div class="sub">状态：草稿 → 待审 → 已发布 · 发布前必须过 GEOS 70 与合规检查</div>
+            </div>
+            <div class="row">
+              <div class="seg"><button class="on">全部 38</button><button>待审 4</button><button>已发布 26</button></div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead>
+                <tr><th>标题</th><th>体裁</th><th>GEOS</th><th>合规</th><th>状态</th><th>AI 引用</th><th></th></tr>
+              </thead>
+              <tbody>
+                <tr class="clickable" data-row-drawer="#c1">
+                  <td class="name">南京装修公司怎么选？5 个硬指标与 3 个陷阱</td>
+                  <td><span class="badge">攻略</span></td>
+                  <td class="strong">91</td>
+                  <td><span class="badge ok">通过</span></td>
+                  <td><span class="badge ok">已发布</span></td>
+                  <td><span class="badge info">5 次</span></td>
+                  <td class="r"><span class="link">打开</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#c1">
+                  <td class="name">老房翻新要不要拆到毛坯？一张表看清成本差</td>
+                  <td><span class="badge">对比</span></td>
+                  <td class="strong">87</td>
+                  <td><span class="badge ok">通过</span></td>
+                  <td><span class="badge warn">待审</span></td>
+                  <td><span class="badge">—</span></td>
+                  <td class="r"><span class="link">审核</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#c1">
+                  <td class="name">100㎡ 三居整装报价明细（含 12 项易增项）</td>
+                  <td><span class="badge">清单</span></td>
+                  <td class="strong">84</td>
+                  <td><span class="badge warn">待修 1 处</span></td>
+                  <td><span class="badge warn">待审</span></td>
+                  <td><span class="badge">—</span></td>
+                  <td class="r"><span class="link">审核</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#c1">
+                  <td class="name">南京河西 / 江宁 / 浦口 装修公司分布与选择建议</td>
+                  <td><span class="badge">本地</span></td>
+                  <td class="strong">88</td>
+                  <td><span class="badge ok">通过</span></td>
+                  <td><span class="badge ok">已发布</span></td>
+                  <td><span class="badge info">3 次</span></td>
+                  <td class="r"><span class="link">打开</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#c1">
+                  <td class="name">装修质保到底保什么？水电 / 防水 / 主材逐项拆解</td>
+                  <td><span class="badge">问答</span></td>
+                  <td class="strong">79</td>
+                  <td><span class="badge bad">未通过</span></td>
+                  <td><span class="badge">草稿</span></td>
+                  <td><span class="badge">—</span></td>
+                  <td class="r"><span class="link">修改</span></td>
+                </tr>
+                <tr class="clickable" data-row-drawer="#c1">
+                  <td class="name">适老化改造：给父母的房子做 8 处安全升级</td>
+                  <td><span class="badge">攻略</span></td>
+                  <td class="strong">86</td>
+                  <td><span class="badge ok">通过</span></td>
+                  <td><span class="badge">草稿</span></td>
+                  <td><span class="badge">—</span></td>
+                  <td class="r"><span class="link">打开</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="row" style="padding:12px 18px;border-top:1px solid var(--hair)">
+            <span class="sub">显示 6 / 38</span>
+            <span class="push sub">今日生成 6 篇 · 排队 0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 合规与口径 -->
+      <section class="grid g3 mt18">
+        <div class="card">
+          <div class="card-hd" style="padding:0"><h3>合规拦截</h3><span class="badge warn">2 篇</span></div>
+          <div class="card-bd" style="padding:10px 0 0">
+            <div class="note warn"><span class="ico">!</span><div><b>极限词</b>：「南京最专业的整装团队」→ 建议改为「南京地区服务 12 年的整装团队」。</div></div>
+            <div class="note warn mt6"><span class="ico">!</span><div><b>绝对化承诺</b>：「零增项」缺少条件限定，需补充适用条款。</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd" style="padding:0"><h3>口径一致性</h3><span class="badge ok">100%</span></div>
+          <div class="card-bd" style="padding:14px 0 0">
+            <div class="stack" style="gap:11px">
+              <div class="meter"><span class="k">价格</span><span class="bar"><i class="green" data-w="100"></i></span><span class="v">一致</span></div>
+              <div class="meter"><span class="k">电话</span><span class="bar"><i class="green" data-w="100"></i></span><span class="v">一致</span></div>
+              <div class="meter"><span class="k">门店</span><span class="bar"><i class="green" data-w="100"></i></span><span class="v">一致</span></div>
+              <div class="meter"><span class="k">卖点表述</span><span class="bar"><i class="amber" data-w="86"></i></span><span class="v">2 处</span></div>
+            </div>
+            <div class="sub mt12">跨 38 篇内容与 4 个页面自动比对，冲突会阻断发布。</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd" style="padding:0"><h3>被引用内容</h3><span class="badge info">11 篇</span></div>
+          <div class="card-bd" style="padding:10px 0 0">
+            <div class="li"><span class="lead b">1</span><div class="txt"><div class="t1">全包、半包、清包怎么选</div><div class="t2">被引用 5 次 · 豆包 / DS / 元宝</div></div></div>
+            <div class="li"><span class="lead b">2</span><div class="txt"><div class="t1">南京装修公司怎么选（5 个指标）</div><div class="t2">被引用 5 次 · 豆包 / Kimi</div></div></div>
+            <div class="li"><span class="lead b">3</span><div class="txt"><div class="t1">2026 南京老房翻新预算清单</div><div class="t2">被引用 3 次</div></div></div>
+            <div class="note mt12"><span class="ico">i</span><div>被引用内容已作为正样本回流微调数据集，下版模型将更倾向此类结构。</div></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="drawer" id="c1" role="dialog" aria-label="内容详情">
+  <div class="drawer-hd">
+    <div>
+      <h3>南京装修公司怎么选？5 个硬指标与 3 个陷阱</h3>
+      <div class="sub">深度攻略 · 1,240 字 · GEOS 91 · 已发布至 3 家媒体</div>
+    </div>
+    <button class="drawer-close" data-close-drawer aria-label="关闭">✕</button>
+  </div>
+
+  <div class="row mt12">
+    <span class="badge ok">合规通过</span>
+    <span class="badge info">事实校验 12/12</span>
+    <span class="badge">引用事实卡 6 条</span>
+  </div>
+
+  <div class="mt18 art">
+    <h4>结论先看</h4>
+    <p class="lead-p">
+      在南京选装修公司，优先核验五项：<b>营业执照与施工资质</b>、<b>报价单的增项规则</b>、
+      <b>在建工地可参观</b>、<b>质保年限是否写进合同</b>、<b>是否有本地固定门店</b>。
+      和序装饰自 2012 年起服务南京主城，目前 4 家门店，整装报价 980–1,350 元/㎡，基础工程质保 5 年、水电 10 年。
+    </p>
+
+    <div class="qa"><b>Q1：报价明显低于同行，能选吗？</b>先看漏项。常见漏项包括拆墙清运、水电全改、门窗更换、成品保护。</div>
+    <div class="qa"><b>Q2：全包和半包怎么选？</b>全包适合时间少、要求口径统一的业主；半包适合有主材渠道、愿意盯工的人。</div>
+    <div class="qa"><b>Q3：工期一般多久？</b>100㎡ 三居整装约 45–60 天，老房全拆改通常增加 10–15 天。</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="sub" style="margin-bottom:10px">GEO 评分构成</div>
+  <div class="stack" style="gap:10px">
+    <div class="meter"><span class="k">事实密度</span><span class="bar"><i class="green" data-w="95"></i></span><span class="v">19/20</span></div>
+    <div class="meter"><span class="k">结构化</span><span class="bar"><i class="green" data-w="100"></i></span><span class="v">20/20</span></div>
+    <div class="meter"><span class="k">结论前置</span><span class="bar"><i class="green" data-w="100"></i></span><span class="v">15/15</span></div>
+    <div class="meter"><span class="k">实体完整</span><span class="bar"><i class="amber" data-w="80"></i></span><span class="v">12/15</span></div>
+    <div class="meter"><span class="k">数据来源</span><span class="bar"><i class="green" data-w="90"></i></span><span class="v">18/20</span></div>
+    <div class="meter"><span class="k">口径一致</span><span class="bar"><i class="green" data-w="100"></i></span><span class="v">7/10</span></div>
+  </div>
+
+  <div class="row mt18">
+    <button class="btn primary" data-toast="已提交审核，通知品牌负责人">提交审核</button>
+    <button class="btn" data-toast="已打开多平台改写：门户 / 知乎 / 小红书 / 口播稿">多平台改写</button>
+    <button class="btn" data-toast="已复制全文">复制</button>
+  </div>
+</div>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

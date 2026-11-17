@@ -1,0 +1,141 @@
+<!-- ============================================================
+     插入位置：frontend/index.html
+       ① <head> 里、</head> 之前 —— 放 link 与两段 JSON-LD
+       ② <body> 里、<div id="root"> 之后 —— 放 <noscript> 兜底
+     ============================================================ -->
+
+<!-- ① 这段放 </head> 之前 -->
+<link rel="alternate" type="text/plain" href="/llms.txt" title="LLMs.txt">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "AgentFlow",
+  "alternateName": "AgentFlow AI Agent 部署平台",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "AI Agent Platform",
+  "operatingSystem": "Web",
+  "description": "开源零代码 AI Agent 平台：拖拽式工作流编辑器 + 多模型热切换 + 知识库 RAG + Skill 广场 + 一键部署。默认 SQLite 单机可跑，数据全部自托管。",
+  "url": "http://159.75.21.251:3000/",
+  "codeRepository": "https://github.com/PHclaw/agentflow",
+  "license": "https://github.com/PHclaw/agentflow/blob/main/LICENSE",
+  "programmingLanguage": ["TypeScript", "Python"],
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "CNY",
+    "description": "开源项目，可自行部署；服务器与模型调用费用自理"
+  },
+  "featureList": [
+    "拖拽式工作流编辑（ReactFlow 画布，六类节点）",
+    "多模型热切换（任意 OpenAI 兼容端点，含 Ollama）",
+    "知识库 RAG（向量模型与对话模型分开配置）",
+    "Skill 广场（23 个预置技能）",
+    "模板市场（客服 / 销售 / HR / 财务）",
+    "产物交付（文件下载 + 图片内联预览）",
+    "自托管部署（Docker Compose，默认 SQLite）"
+  ]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "AgentFlow",
+  "url": "http://159.75.21.251:3000/",
+  "email": "2730545346@qq.com",
+  "sameAs": ["https://github.com/PHclaw/agentflow"]
+}
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "AgentFlow 是免费的吗？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "开源项目，代码可自行部署，不收取软件授权费。服务器与 LLM API 调用费用需自行承担。具体许可条款以仓库 LICENSE 文件为准。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "不会写代码能用 AgentFlow 吗？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以。核心就是零代码拖拽式工作流编辑器，通过可视化画布连接节点即可构建 AI Agent；模板市场的场景模板可以一键套用后直接对话。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "AgentFlow 支持哪些大模型？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "支持任意 OpenAI 兼容端点：OpenAI、Anthropic、DeepSeek、通义、Ollama 本地模型等。在「设置 → 模型配置」里填写端点地址与模型名，改完不用重启即可生效。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "知识库 RAG 是怎么工作的？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "上传文档后自动分块入库，用 embedding 模型生成向量；提问时按相关度召回片段并注入模型上下文。向量模型与对话模型分开配置，可以各自替换。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "AgentFlow 可以自托管吗？数据存在哪里？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "可以，Docker Compose 一条命令部署。默认数据落在本机 SQLite 文件（./data/agentflow.db），docker compose down 不会丢数据；需要时也可切换到 PostgreSQL + pgvector。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "部署 AgentFlow 需要什么环境？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Python 3.11+ 与 Node.js 18+（CI 基线），或 Docker 20+。PostgreSQL 和 Redis 都不是必需的：默认用 SQLite，Redis 缺失时验证码退回进程内存。"
+      }
+    }
+  ]
+}
+</script>
+
+
+<!-- ② 这段放 <body> 里、<div id="root"> 之后 -->
+<!-- 说明：这不是替代方案。AI 爬虫大多不执行 JS，noscript 只能兜住一部分；
+     真正的解法是给营销页做预渲染（见 README 的 P0-2）。 -->
+<noscript>
+  <div style="max-width:760px;margin:48px auto;padding:0 20px;font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;line-height:1.85;color:#1d1d1f">
+    <h1>AgentFlow — 开源零代码 AI Agent 平台</h1>
+    <p>
+      拖拽式工作流编辑器 + 多模型热切换 + 知识库 RAG + Skill 广场 + 一键部署。
+      默认 SQLite 单机可跑，用户、对话与知识库数据全部自托管。
+    </p>
+    <h2>核心能力</h2>
+    <ul>
+      <li><strong>拖拽式工作流编辑</strong>：ReactFlow 画布，触发器 / LLM / 知识库 / 工具 / 条件分支 / 回复六类节点自由组合</li>
+      <li><strong>多模型热切换</strong>：任意 OpenAI 兼容端点（OpenAI、Anthropic、DeepSeek、通义、Ollama），界面改完不用重启</li>
+      <li><strong>知识库 RAG</strong>：文档自动分块入库，向量检索返回相关度，向量模型与对话模型分开配置</li>
+      <li><strong>Skill 广场</strong>：23 个预置技能（Excel、PPT、PDF、学术检索、会议纪要、统计分析等）</li>
+      <li><strong>模板市场</strong>：客服 / 销售 / HR / 财务场景模板，一键套用为可用 Agent</li>
+      <li><strong>产物交付</strong>：生成文件可下载，图片类产物在对话内联渲染</li>
+    </ul>
+    <h2>技术栈</h2>
+    <p>前端 React 18 + TypeScript + Vite + ReactFlow；后端 Python 3.11+ / FastAPI + SQLAlchemy 2.0（async）；默认 SQLite，可选 PostgreSQL + pgvector；Docker Compose 部署。</p>
+    <h2>了解更多</h2>
+    <p>
+      代码仓库：<a href="https://github.com/PHclaw/agentflow">github.com/PHclaw/agentflow</a><br>
+      产品说明：<a href="/llms.txt">/llms.txt</a>　|　联系邮箱：2730545346@qq.com
+    </p>
+    <p style="color:#86868b;font-size:14px">本站是单页应用，需要启用 JavaScript 才能交互体验。</p>
+  </div>
+</noscript>
