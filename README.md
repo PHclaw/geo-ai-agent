@@ -112,7 +112,7 @@ AI 全景诊断 → 知识资产建库 → 内容生产 → 分发与排期 → 
 ```bash
 cd server && npm install && npm start                       # 后端 http://127.0.0.1:8002
 cd prototype/react && npm install && npm run dev -- --port 3001   # 前端 http://127.0.0.1:3001
-curl http://127.0.0.1:8002/api/health                       # {"ok":true,"mode":"mock",...}
+curl http://127.0.0.1:8002/api/health                       # {"ok":true,"mode":"mixed",...}
 ```
 
 打开 `http://127.0.0.1:3001`。
@@ -126,7 +126,7 @@ curl http://127.0.0.1:8002/api/health                       # {"ok":true,"mode":
 | 演示 / 负责人 | `13800000000` | `123456` |
 | 运营（人工代投） | `13900000000` | `123456` |
 
-`mode=mock` 表示没有真实模型 Key、探测走确定性模拟——**这是预期的，不是启动失败**。
+`mode=mock` 表示没有真实模型 Key、探测全部走确定性模拟；`mode=mixed` 表示部分平台真实。**没有 Key 时出现 mock 是预期的，不是启动失败**。
 
 ### 停止
 
@@ -160,7 +160,7 @@ curl http://127.0.0.1:8002/api/health                       # {"ok":true,"mode":
 
 ![GEO AI Agent 五步闭环与数据口径](deliverables/geo-ai-agent/pipeline.png)
 
-> 图 1：当前 6 个模型 Key 与搜索 Key 均未配置，所以「诊断」与「关键词排名」仍标为模拟 / 未检测。
+> 图 1：绘制时 6 个模型 Key 均未配置；截至 2026-11-18 已配 DeepSeek 1 个，诊断中 46/276 条转为真实调用，「关键词排名」仍为未检测。
 
 ### 系统框架
 
@@ -212,7 +212,7 @@ GEO Aiagent/
 
 | 通道 | 当前状态 | 如何变真实 |
 | --- | --- | --- |
-| AI 探测（AVI / 提及率 / SoV） | `mode=mock`，6 平台全部模拟 | 至少填 1 个 `GEO_*_KEY` |
+| AI 探测（AVI / 提及率 / SoV） | `mode=mixed`：DeepSeek 真实（46 条/轮），其余 5 家模拟 | 逐家填 `GEO_*_KEY` 即可转真实 |
 | 智能体写作 / 资料整理 | **真实执行**（本机 `pi` CLI） | 凭证在 `~/.pi/agent/auth.json`，**不读 `server/.env`** |
 | 站点可索引性 / SEO 扫描 | **真实 HTTP 抓取**（9 项检查） | 无需 Key；目标站当前 41/100 |
 | 关键词排名 / `site:` 收录 | 「未检测」 | 填 SerpAPI Key；或用 `/seo` 人工录入逐词位次 |
@@ -291,7 +291,7 @@ API 分组与 30 张表清单见 `docs/GEO-AI-Agent-PRD.md` 的 **19.2 / 19.3**�
 
 **功能已跑通，但仍是本地演示态**：
 
-- 未配模型 Key 与搜索 Key，AVI 与关键词排名还是模拟 / 未检测；目标站点 `159.75.21.251:3000` 是裸 IP + SPA 空白页，`robots/sitemap` 假 200，可索引性只有 41/100——**站点不修好，配齐 Key 也只是把「0 命中」测得更准**
+- 只配了 DeepSeek 1 个 Key：每轮 276 条里 46 条为真实调用，其余 5 家与搜索排名仍为模拟 / 未检测；目标站点 `159.75.21.251:3000` 是裸 IP + SPA 空白页，`robots/sitemap` 假 200，可索引性只有 41/100——**站点不修好，配齐 Key 也只是把「0 命中」测得更准**
 - 后端只监听 `127.0.0.1`，不托管前端 `dist`，需要两个进程；无 HTTPS、限流、CI / Docker、对象存储与备份策略
 - `GEO_TOKEN_SECRET` 仍是默认值，演示账号固定；CORS 回显任意 Origin
 - 视频播放器、语音克隆、活体校验、外部视频生成服务、报告生成、批量复测、跨租户切换、UTM / 线索归因、告警、直连媒体 API 均未接入（相关按钮会标注「未接入」或只登记 `pending` 任务）

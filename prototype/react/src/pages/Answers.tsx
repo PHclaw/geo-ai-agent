@@ -188,7 +188,11 @@ export default function Answers() {
       </Card>
 
       <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi label="答案总数" value={data?.total ?? "—"} sub={data?.runId ? `轮次 ${data.runId.slice(0, 8)}` : "全部轮次"} />
+        <Kpi
+          label="答案总数"
+          value={data?.total ?? "—"}
+          sub={`真实 ${data?.sources?.live ?? 0} · 模拟 ${data?.sources?.mock ?? 0}`}
+        />
         <Kpi label="本页已引用" value={pageCited} sub={`本页 ${data?.items.length ?? 0} 条`} />
         <Kpi
           label="覆盖平台"
@@ -230,7 +234,12 @@ export default function Answers() {
                   </td>
                   <td className={cn(td, "tnum")}>{a.citationCount}</td>
                   <td className={td}>
-                    <Badge tone={a.cited ? "ok" : "default"}>{a.cited ? "已引用" : "未引用"}</Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge tone={a.cited ? "ok" : "default"}>{a.cited ? "已引用" : "未引用"}</Badge>
+                      <Badge tone={a.source === "live" ? "ok" : a.source === "error" ? "warn" : "info"}>
+                        {a.source === "live" ? "真实" : a.source === "error" ? "失败" : a.source === "cend" ? "人工" : "模拟"}
+                      </Badge>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -280,7 +289,17 @@ export default function Answers() {
                   {platformLabel(detail?.platform || "")} · 答案原文
                 </div>
                 <div className="mt-1 text-[10.5px] text-ink3">
-                  {detail ? `${detail.createdAt.slice(0, 16).replace("T", " ")} · ${detail.intent || "—"} · ${detail.mode === "mock" ? "模拟样本" : "真实采集"}` : "加载中…"}
+                  {detail
+                    ? `${detail.createdAt.slice(0, 16).replace("T", " ")} · ${detail.intent || "—"} · ${
+                        detail.source === "live"
+                          ? "真实采集"
+                          : detail.source === "cend"
+                            ? "人工取证"
+                            : detail.source === "error"
+                              ? "探测失败"
+                              : "模拟样本"
+                      }`
+                    : "加载中…"}
                 </div>
               </div>
               <button onClick={() => setSelected(null)} className={ghostCls}>

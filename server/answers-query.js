@@ -104,6 +104,8 @@ export function toAnswerRow(r, clip = 160) {
     mention: !!r.mention,
     accuracy: r.accuracy,
     position: r.position,
+    // 单条来源：live 真实调用 / mock 模拟 / cend 人工取证 / error 调用失败
+    source: r.source || "mock",
     createdAt: r.created_at,
   };
 }

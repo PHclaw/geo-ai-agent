@@ -928,9 +928,13 @@ app.get(
           .all(brand.id, scopeRun)
       : db.prepare("SELECT platform, COUNT(*) c FROM probe_results WHERE brand_id=? GROUP BY platform ORDER BY platform").all(brand.id);
 
+    const sourceRows = db.prepare(`SELECT r.source, COUNT(*) c ${base} GROUP BY r.source`).all(...params);
+    const sources = Object.fromEntries(sourceRows.map((x) => [x.source || "mock", x.c]));
+
     res.json({
       items: rows.map((r) => toAnswerRow(r)),
       total,
+      sources,
       page: q.page,
       size: q.size,
       pages: Math.max(1, Math.ceil(total / q.size)),

@@ -112,7 +112,7 @@ This system combines probing, a knowledge base, structured content, a source led
 ```bash
 cd server && npm install && npm start                              # backend http://127.0.0.1:8002
 cd prototype/react && npm install && npm run dev -- --port 3001    # frontend http://127.0.0.1:3001
-curl http://127.0.0.1:8002/api/health                              # {"ok":true,"mode":"mock",...}
+curl http://127.0.0.1:8002/api/health                              # {"ok":true,"mode":"mixed",...}
 ```
 
 Open `http://127.0.0.1:3001`.
@@ -126,7 +126,7 @@ Open `http://127.0.0.1:3001`.
 | Demo / owner | `13800000000` | `123456` |
 | Operations (manual placement) | `13900000000` | `123456` |
 
-`mode=mock` means no model API keys are configured and probing runs deterministic simulations — **this is expected, not a startup failure**.
+`mode=mock` means no model API keys are configured and probing runs deterministic simulations; `mode=mixed` means some platforms are live. Seeing `mock` without keys is expected, not a startup failure.
 
 ### Stop
 
@@ -213,7 +213,7 @@ Three rules govern the publishing schedule: **plans only, no automated posting**
 
 | Channel | Current state | How to make it real |
 | --- | --- | --- |
-| AI probing (AVI / mention rate / SoV) | `mode=mock`, all six platforms simulated | configure at least one `GEO_*_KEY` |
+| AI probing (AVI / mention rate / SoV) | `mode=mixed`: DeepSeek live (46 of 276 per run), the other five simulated | configure each `GEO_*_KEY` to go live |
 | Agent writing / data structuring | **real execution** (local `pi` CLI) | credentials in `~/.pi/agent/auth.json`, **not read from `server/.env`** |
 | Site indexability / SEO scan | **real HTTP fetches** (9 checks) | no key needed; target site currently 41/100 |
 | Keyword ranking / `site:` coverage | `not measured` | add a SerpAPI key, or enter positions manually in `/seo` |

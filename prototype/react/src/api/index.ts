@@ -1174,6 +1174,7 @@ export type AnswerItem = {
   mention: boolean;
   accuracy: number;
   position: number;
+  source: string;
   createdAt: string;
 };
 
@@ -1205,6 +1206,7 @@ export type AnswerQuery = {
 export type AnswersData = {
   items: AnswerItem[];
   total: number;
+  sources: Record<string, number>;
   page: number;
   size: number;
   pages: number;
