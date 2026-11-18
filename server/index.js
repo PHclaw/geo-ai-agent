@@ -29,11 +29,12 @@ import { buildPlanSlots } from "./plan.js";
 import { routeIntent, describeIntent, fieldsFor, needsConfirm, selectAnswerHits, AGENT_PRESETS } from "./agent-router.js";
 import {
   keywordPrompt,
-  questionPrompt,
+  matrixPrompt,
   parseJsonLoose,
   auditKeywords,
-  auditPrompts,
+  auditMatrix,
   isLocalService,
+  DIMENSIONS,
 } from "./prompt-gen.js";
 import {
   normalizeAnswerQuery,
@@ -127,6 +128,9 @@ const mapPrompt = (p) => ({
   text: p.text,
   intent: p.intent,
   weight: p.weight,
+  /** 关键词与维度：用于按「关键词 × 维度」组织矩阵 */
+  keyword: p.keyword || "",
+  dimension: p.dimension || "",
   createdAt: p.created_at,
   /** 已取证的平台数（去重），用于矩阵里显示采集进度 */
   evidenced: p.evidenced ?? 0,
@@ -1609,10 +1613,34 @@ app.post(
 );
 
 /**
- * AI 生成提问（两段式）：
- * ① 先从品牌资料里选关键词 → ② 再基于关键词造问题 → ③ 确定性质检，不合格剔除并重试一次
- * 关键词与质检结果一并返回，便于人工复核「问题是不是问在点上」。
+ * AI 生成提问矩阵（v3）：
+ * ① 从品牌资料选关键词（类型 / 别名 / 依据）
+ * ② 按「关键词 × 维度」出题
+ * ③ 确定性质检（覆盖、句式分布、泛问、品牌词、近重复）
+ * 维度 → 意图 由代码映射，不让模型标，避免标签错位。
  */
+function coverageOf(list, keywords) {
+  const perDimension = {};
+  const perKeyword = {};
+  const pattern = {};
+  for (const q of list) {
+    perDimension[q.dimension] = (perDimension[q.dimension] || 0) + 1;
+    perKeyword[q.keyword] = (perKeyword[q.keyword] || 0) + 1;
+    const p = q.pattern || "其他";
+    pattern[p] = (pattern[p] || 0) + 1;
+  }
+  return {
+    keywords: Object.keys(perKeyword).length,
+    dimensions: Object.keys(perDimension).length,
+    cells: new Set(list.map((q) => `${q.keyword}||${q.dimension}`)).size,
+    questions: list.length,
+    expectedKeywords: keywords.length,
+    perDimension,
+    perKeyword,
+    pattern,
+  };
+}
+
 app.post(
   "/api/prompts/agent",
   requireAuth,
@@ -1647,8 +1675,7 @@ app.post(
       });
       if (!kwOut.ok) return res.status(422).json({ error: kwOut.error || "关键词生成失败" });
 
-      const kwJson = parseJsonLoose(kwOut.text);
-      const kwAudit = auditKeywords(kwJson?.keywords, { brandName: brand.name });
+      const kwAudit = auditKeywords(parseJsonLoose(kwOut.text)?.keywords, { brandName: brand.name });
       if (!kwAudit.accepted.length) {
         return res.status(422).json({
           error: "模型没有产出可用的关键词",
@@ -1656,63 +1683,77 @@ app.post(
         });
       }
 
-      /* ② 基于关键词造问题 */
-      const perKeyword = Math.min(3, Math.max(1, Number(req.body?.perKeyword) || 2));
-      const basePrompt = questionPrompt({ brand, keywords: kwAudit.accepted, perKeyword, local: localService });
+      /* ② 关键词 × 维度 出题 */
+      const perCell = Math.min(3, Math.max(1, Number(req.body?.perCell) || 2));
+      const basePrompt = matrixPrompt({ brand, keywords: kwAudit.accepted, perCell });
       const existing = db
         .prepare("SELECT text FROM prompts WHERE brand_id=?")
         .all(brand.id)
         .map((r) => r.text);
 
-      let qOut = await runAgent({
+      const qOut = await runAgent({
         brandId: brand.id,
         prompt: basePrompt,
         timeoutMs: 180000,
-        system: "你是 GEO 提问设计助手。只输出 JSON 数组，不要解释，不要 markdown 代码块。",
+        system: "你是 GEO 提问设计助手。只输出 JSON 对象，不要解释，不要 markdown 代码块。",
       });
       if (!qOut.ok) return res.status(422).json({ error: qOut.error || "提问生成失败" });
 
-      let items = parseJsonLoose(qOut.text);
-      let audit = auditPrompts(items, {
+      let audit = auditMatrix(parseJsonLoose(qOut.text)?.matrix, {
         brandName: brand.name,
         localService,
         existing,
-        limit: 40,
       });
 
-      /* ③ 通过率过低时，带着拒绝原因重试一次 */
-      const retried = audit.stats.accepted < Math.min(16, Math.round((audit.stats.total || 0) * 0.6));
-      if (retried && audit.rejected.length) {
-        const retryPrompt = `${basePrompt}\n\n上一轮以下问题不合格，请避免同类问题：\n${audit.rejected
-          .slice(0, 8)
+      /* ③ 覆盖不足或通过率低：带拒绝原因重试一次 */
+      let retried = false;
+      const coverageGap =
+        audit.accepted.length < 24 ||
+        audit.coverage.dimensions < 6 ||
+        audit.coverage.keywords < Math.ceil(kwAudit.accepted.length * 0.7);
+      if (coverageGap && audit.rejected.length) {
+        retried = true;
+        const retryPrompt = `${basePrompt}\n\n上一轮以下问题不合格，请补充并避免同类问题：\n${audit.rejected
+          .slice(0, 10)
           .map((r) => `- ${r.text || "（空）"}（${r.reason}）`)
           .join("\n")}`;
         const qOut2 = await runAgent({
           brandId: brand.id,
           prompt: retryPrompt,
           timeoutMs: 180000,
-          system: "你是 GEO 提问设计助手。只输出 JSON 数组，不要解释，不要 markdown 代码块。",
+          system: "你是 GEO 提问设计助手。只输出 JSON 对象，不要解释，不要 markdown 代码块。",
         });
         if (qOut2.ok) {
-          const items2 = parseJsonLoose(qOut2.text);
-          const audit2 = auditPrompts(items2, {
+          const audit2 = auditMatrix(parseJsonLoose(qOut2.text)?.matrix, {
             brandName: brand.name,
             localService,
             existing: [...existing, ...audit.accepted.map((x) => x.text)],
-            limit: 40 - audit.accepted.length,
           });
+          const merged = [...audit.accepted, ...audit2.accepted];
+          const coverage = coverageOf(merged, kwAudit.accepted);
           audit = {
-            accepted: [...audit.accepted, ...audit2.accepted],
+            accepted: merged,
             rejected: [...audit.rejected, ...audit2.rejected],
+            coverage,
             stats: {
-              ...audit.stats,
-              accepted: audit.accepted.length + audit2.accepted.length,
-              rejected: audit.rejected.length + audit2.rejected.length,
               total: (audit.stats.total || 0) + (audit2.stats.total || 0),
+              accepted: merged.length,
+              rejected: audit.rejected.length + audit2.rejected.length,
+              brandHits: merged.filter((q) => q.text.includes(brand.name)).length,
+              brandRatio: merged.length
+                ? Number((merged.filter((q) => q.text.includes(brand.name)).length / merged.length).toFixed(3))
+                : 0,
+              dimensionsCovered: coverage.dimensions,
+              keywordsCovered: coverage.keywords,
             },
           };
         }
       }
+
+      // 覆盖统计统一重算：保证 expectedKeywords 与最终结果一致
+      audit.coverage = coverageOf(audit.accepted, kwAudit.accepted);
+      audit.stats.dimensionsCovered = audit.coverage.dimensions;
+      audit.stats.keywordsCovered = audit.coverage.keywords;
 
       if (!audit.accepted.length) {
         return res.status(422).json({
@@ -1733,9 +1774,12 @@ app.post(
           db.prepare("DELETE FROM prompts WHERE brand_id=?").run(brand.id);
         }
         const ins = db.prepare(
-          "INSERT INTO prompts (id, brand_id, text, intent, weight, created_at) VALUES (?,?,?,?,?,?)"
+          `INSERT INTO prompts (id, brand_id, text, intent, weight, keyword, dimension, created_at)
+           VALUES (?,?,?,?,?,?,?,?)`
         );
-        for (const p of audit.accepted) ins.run(id(), brand.id, p.text, p.intent, p.weight, t);
+        for (const p of audit.accepted) {
+          ins.run(id(), brand.id, p.text, p.intent, p.weight, p.keyword, p.dimension, t);
+        }
         db.exec("COMMIT");
       } catch (e) {
         db.exec("ROLLBACK");
@@ -1745,12 +1789,24 @@ app.post(
       const intentCount = {};
       for (const p of audit.accepted) intentCount[p.intent] = (intentCount[p.intent] || 0) + 1;
 
+      /* ⑤ 输出矩阵视图：按维度分组，组内按关键词 */
+      const matrix = DIMENSIONS.map((d) => ({
+        dimension: d.key,
+        intent: d.intent,
+        cells: [...new Set(audit.accepted.filter((q) => q.dimension === d.key).map((q) => q.keyword))].map((kw) => ({
+          keyword: kw,
+          questions: audit.accepted.filter((q) => q.dimension === d.key && q.keyword === kw).map((q) => q.text),
+        })),
+      })).filter((d) => d.cells.length);
+
       res.json({
         ok: true,
         added: audit.accepted.length,
         replaced: replace,
         keywords: kwAudit.accepted,
         keywordRejected: kwAudit.rejected.slice(0, 5),
+        coverage: audit.coverage,
+        matrix,
         stats: { ...audit.stats, intents: intentCount },
         rejected: audit.rejected.slice(0, 10),
         retried,
@@ -1764,6 +1820,48 @@ app.post(
       res.status(500).json({ error: String(e.message || e) });
     }
   }
+);
+
+/**
+ * 基于关键词的推荐：输入一句/一个词，返回命中的关键词与对应问题（按维度分组）
+ * 纯检索，不调模型；用于工作台选题、内容创作选词、投放选痛点。
+ */
+app.post(
+  "/api/prompts/recommend",
+  requireAuth,
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.body?.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    const query = String(req.body?.query || "").trim();
+    if (!query) return res.status(400).json({ error: "请输入关键词或一句话" });
+
+    const norm = (s) => String(s || "").replace(/\s+/g, "").toLowerCase();
+    const qn = norm(query);
+    const rows = db.prepare("SELECT * FROM prompts WHERE brand_id=?").all(brand.id);
+    const matched = rows.filter((r) => {
+      const k = norm(r.keyword);
+      return (k && (k.includes(qn) || qn.includes(k))) || norm(r.text).includes(qn);
+    });
+
+    const groups = new Map();
+    for (const r of matched) {
+      const kw = r.keyword || "未归类";
+      if (!groups.has(kw)) groups.set(kw, []);
+      groups.get(kw).push({ text: r.text, intent: r.intent, dimension: r.dimension || "", weight: r.weight });
+    }
+
+    res.json({
+      query,
+      matchedKeywords: [...groups.keys()],
+      total: matched.length,
+      groups: [...groups.entries()].map(([keyword, questions]) => ({
+        keyword,
+        count: questions.length,
+        dimensions: [...new Set(questions.map((q) => q.dimension).filter(Boolean))],
+        questions: questions.slice(0, 8),
+      })),
+    });
+  })
 );
 
 /* ---------------- 产品库（SKU 明细） ---------------- */

@@ -574,6 +574,11 @@ export function migrate() {
   // 6) 平台运营账号（人工代投）
   seedOps();
 
+  // 6.5) 提问矩阵：关键词与维度
+  const prmCols = db.prepare("PRAGMA table_info(prompts)").all().map((c) => c.name);
+  if (!prmCols.includes("keyword")) db.exec("ALTER TABLE prompts ADD COLUMN keyword TEXT DEFAULT ''");
+  if (!prmCols.includes("dimension")) db.exec("ALTER TABLE prompts ADD COLUMN dimension TEXT DEFAULT ''");
+
   // 7) 证据分级：C 端取证 / 带搜索 API / 裸模型 API / 模拟
   const prCols = db.prepare("PRAGMA table_info(probe_results)").all().map((c) => c.name);
   if (!prCols.includes("channel")) db.exec("ALTER TABLE probe_results ADD COLUMN channel TEXT DEFAULT 'mock'");

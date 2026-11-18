@@ -14,6 +14,8 @@ import {
 } from "../api";
 
 const INTENTS = ["认知", "决策", "口碑", "比较", "本地"] as const;
+/** 与后端 prompt-gen.js 的七维度保持一致 */
+const DIMENSIONS = ["平台选型", "功能对比", "应用场景", "技术实现", "迁移替换", "成本预算", "口碑风险"] as const;
 /** 取证平台数（与后端 providerStatus 保持 6 家） */
 const PLATFORMS = 6;
 const TONE: Record<string, "info" | "warn" | "purple" | "default"> = {
@@ -29,6 +31,7 @@ export default function PromptMatrix() {
   const { data: prompts, loading, error, reload } = useApi(brandId ? () => fetchPrompts(brandId) : null, [brandId]);
 
   const [filter, setFilter] = useState<string>("全部");
+  const [dimFilter, setDimFilter] = useState<string>("全部维度");
   const [text, setText] = useState("");
   const [intent, setIntent] = useState<string>("决策");
   const [busy, setBusy] = useState(false);
@@ -36,14 +39,29 @@ export default function PromptMatrix() {
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [confirmAgent, setConfirmAgent] = useState(false);
   const [confirmRebuild, setConfirmRebuild] = useState(false);
-  const [lastKeywords, setLastKeywords] = useState<{ term: string; type: string; intentHint: string }[]>([]);
+  const [lastKeywords, setLastKeywords] = useState<{ term: string; type: string; aliases: string[] }[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmBatch, setConfirmBatch] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const canWrite = me?.permissions?.write !== false;
   const list = useMemo(() => prompts || [], [prompts]);
-  const rows = filter === "全部" ? list : list.filter((p) => p.intent === filter);
+  const rows = useMemo(
+    () =>
+      list
+        .filter((p) => filter === "全部" || p.intent === filter)
+        .filter((p) => dimFilter === "全部维度" || (p.dimension || "未归类") === dimFilter),
+    [list, filter, dimFilter]
+  );
+
+  const byDimension = useMemo(() => {
+    const m: Record<string, number> = {};
+    list.forEach((p) => {
+      const d = p.dimension || "未归类";
+      m[d] = (m[d] || 0) + 1;
+    });
+    return m;
+  }, [list]);
 
   // “本地”在两种行业里意思不同：有城市的服务类=到店/附近；无地址的软件类=本地部署/私有化
   const hasCity = Boolean(brand?.city);
@@ -183,9 +201,10 @@ export default function PromptMatrix() {
     setThinking(true);
     try {
       const out = await agentPrompts(brandId, { replace });
-      setLastKeywords(out.keywords.slice(0, 16));
+      setLastKeywords(out.keywords.slice(0, 18));
       const parts = [
         `关键词 ${out.keywords.length} 个`,
+        `维度 ${out.coverage.dimensions}/7`,
         `新增 ${out.added} 条`,
         out.stats.rejected ? `剔除 ${out.stats.rejected} 条` : "",
         out.retried ? "已自动重试" : "",
@@ -313,7 +332,7 @@ export default function PromptMatrix() {
             {lastKeywords.map((k) => (
               <span
                 key={k.term}
-                title={`${k.type} · 偏${k.intentHint}`}
+                title={`${k.type}${k.aliases?.length ? ` · ${k.aliases.join(" / ")}` : ""}`}
                 className="rounded-full border border-hair bg-white px-2 py-0.5 text-[10.5px] text-ink2"
               >
                 {k.term}
@@ -345,6 +364,25 @@ export default function PromptMatrix() {
             >
               {k}
               {k !== "全部" && <span className="ml-1 opacity-60">{byIntent[k] || 0}</span>}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 px-[18px] pb-3">
+          <span className="text-[10.5px] text-ink3">维度：</span>
+          {["全部维度", ...DIMENSIONS].map((d) => (
+            <button
+              key={d}
+              onClick={() => setDimFilter(d)}
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-[11px] transition-colors",
+                dimFilter === d
+                  ? "border-accent bg-accent/10 text-accent"
+                  : "border-hair bg-white text-ink2 hover:bg-[#f7f7f8]"
+              )}
+            >
+              {d}
+              {d !== "全部维度" && <span className="ml-1 opacity-60">{byDimension[d] || 0}</span>}
             </button>
           ))}
         </div>
@@ -386,7 +424,7 @@ export default function PromptMatrix() {
                     className="h-3.5 w-3.5 accent-[#0071e3]"
                   />
                 </th>
-                {["问题", "意图", "权重", "取证", "操作"].map((h) => (
+                {["问题", "关键词", "维度", "意图", "权重", "取证", "操作"].map((h) => (
                   <th
                     key={h}
                     className="border-y border-hair bg-[#fafafb]/70 px-3.5 py-2.5 text-left text-[10px] font-semibold tracking-[0.07em] whitespace-nowrap text-ink3 uppercase"
@@ -409,6 +447,12 @@ export default function PromptMatrix() {
                     />
                   </td>
                   <td className={cn(td, "text-ink")}>{p.text}</td>
+                  <td className={cn(td, "whitespace-nowrap text-[11.5px]")}>
+                    {p.keyword || <span className="text-ink3">—</span>}
+                  </td>
+                  <td className={cn(td, "whitespace-nowrap text-[11.5px]")}>
+                    {p.dimension || <span className="text-ink3">未归类</span>}
+                  </td>
                   <td className={td}>
                     {canWrite ? (
                       <select
@@ -455,7 +499,7 @@ export default function PromptMatrix() {
               ))}
               {!rows.length && (
                 <tr>
-                  <td colSpan={6} className="px-3.5 py-12 text-center">
+                  <td colSpan={8} className="px-3.5 py-12 text-center">
                     <div className="text-[12.5px] text-ink2">这个意图下还没有问题</div>
                     <div className="mt-1.5 text-[11px] text-ink3">用上方「AI 生成提问」或手动添加</div>
                   </td>

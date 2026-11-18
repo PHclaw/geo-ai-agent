@@ -40,6 +40,9 @@ export type Prompt = {
   text: string;
   intent: string;
   weight: number;
+  /** 所属关键词与维度（矩阵组织用） */
+  keyword?: string;
+  dimension?: string;
   createdAt?: string;
   /** 已取证的平台数（去重） */
   evidenced?: number;
@@ -546,7 +549,10 @@ export const updatePrompt = (promptId: string, input: { text?: string; intent?: 
 export const deletePromptsBatch = (brandId: string, ids: string[]) =>
   api<{ ok: true; deleted: number }>("/prompts/batch-delete", { method: "POST", body: { brandId, ids } });
 
-export type AgentPromptKeyword = { term: string; type: string; intentHint: string; why: string };
+export type AgentPromptKeyword = { term: string; type: string; aliases: string[]; why: string };
+
+export type AgentMatrixCell = { keyword: string; questions: string[] };
+export type AgentMatrixDimension = { dimension: string; intent: string; cells: AgentMatrixCell[] };
 
 export type AgentPromptsResult = {
   ok: true;
@@ -554,21 +560,33 @@ export type AgentPromptsResult = {
   replaced: boolean;
   keywords: AgentPromptKeyword[];
   keywordRejected: { term: string; reason: string }[];
+  coverage: {
+    keywords: number;
+    dimensions: number;
+    cells: number;
+    questions: number;
+    expectedKeywords: number;
+    perDimension: Record<string, number>;
+    perKeyword: Record<string, number>;
+    pattern?: Record<string, number>;
+  };
+  matrix: AgentMatrixDimension[];
   stats: {
     total: number;
     accepted: number;
     rejected: number;
     brandHits: number;
     brandRatio: number;
+    dimensionsCovered: number;
+    keywordsCovered: number;
     intents: Record<string, number>;
-    intentCoverage: number;
   };
-  rejected: { text: string; reason: string }[];
+  rejected: { text: string; reason: string; keyword?: string; dimension?: string }[];
   retried: boolean;
   localService: boolean;
   fromDocs: number;
   fromFacts: number;
-  preview: { text: string; intent: string; weight: number; keyword?: string; constraint?: string }[];
+  preview: { text: string; intent: string; weight: number; keyword?: string; dimension?: string }[];
 };
 
 /** AI 生成提问：先选关键词 → 再造问题 → 质检（约 40–90s） */
