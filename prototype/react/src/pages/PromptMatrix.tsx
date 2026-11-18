@@ -35,6 +35,8 @@ export default function PromptMatrix() {
   const [thinking, setThinking] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [confirmAgent, setConfirmAgent] = useState(false);
+  const [confirmRebuild, setConfirmRebuild] = useState(false);
+  const [lastKeywords, setLastKeywords] = useState<{ term: string; type: string; intentHint: string }[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmBatch, setConfirmBatch] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -161,19 +163,35 @@ export default function PromptMatrix() {
     }
   }
 
-  async function fillByAgent() {
+  async function fillByAgent(replace = false) {
     if (!brandId || thinking) return;
-    // 两次点击确认：首次只亮起“再点一次开始”，避免误触直接跑掉 30 秒的 AI 任务
-    if (!confirmAgent) {
-      setConfirmAgent(true);
-      window.setTimeout(() => setConfirmAgent(false), 6000);
+    // 两次点击确认：首次只亮起「再点一次开始」，避免误触直接跑掉 1 分钟的 AI 任务
+    const armed = replace ? confirmRebuild : confirmAgent;
+    if (!armed) {
+      if (replace) {
+        setConfirmRebuild(true);
+        window.setTimeout(() => setConfirmRebuild(false), 6000);
+      } else {
+        setConfirmAgent(true);
+        window.setTimeout(() => setConfirmAgent(false), 6000);
+      }
       return;
     }
-    setConfirmAgent(false);
+    if (replace) setConfirmRebuild(false);
+    else setConfirmAgent(false);
+
     setThinking(true);
     try {
-      const out = await agentPrompts(brandId);
-      flash(`AI 生成：新增 ${out.added} 条${out.skipped ? `，跳过重复 ${out.skipped} 条` : ""}`);
+      const out = await agentPrompts(brandId, { replace });
+      setLastKeywords(out.keywords.slice(0, 16));
+      const parts = [
+        `关键词 ${out.keywords.length} 个`,
+        `新增 ${out.added} 条`,
+        out.stats.rejected ? `剔除 ${out.stats.rejected} 条` : "",
+        out.retried ? "已自动重试" : "",
+        replace ? "旧题已替换" : "",
+      ].filter(Boolean);
+      flash(`AI 生成：${parts.join(" · ")}`);
       await reload();
     } catch (e) {
       flash(e instanceof Error ? e.message : "AI 生成失败");
@@ -266,7 +284,15 @@ export default function PromptMatrix() {
             )}
             title="读知识库与事实卡，生成贴合行业的问题"
           >
-            {thinking ? "AI 出题中…" : confirmAgent ? "再点一次开始（20–40 秒）" : "AI 生成提问"}
+            {thinking ? "AI 出题中…" : confirmAgent ? "再点一次开始（40–90 秒）" : "AI 生成提问"}
+          </button>
+          <button
+            onClick={() => void fillByAgent(true)}
+            disabled={thinking || !canWrite}
+            className="rounded-full border border-[#e0b04a]/60 bg-[#fdf6e6] px-3.5 py-1.5 text-[12px] text-[#a35f12] hover:bg-[#fbf0d9]"
+            title="清空现有提问与旧探测记录，按关键词重新出题"
+          >
+            {confirmRebuild ? "再点一次：会删除旧提问" : "AI 重建（替换旧题）"}
           </button>
           <button
             onClick={() => void fillByTemplate()}
@@ -280,6 +306,21 @@ export default function PromptMatrix() {
             AI 生成会读资料，更贴合；模板补充快，但换行业容易出"套壳问题"
           </span>
         </div>
+
+        {!!lastKeywords.length && (
+          <div className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="text-[10.5px] text-ink3">本次选中的关键词：</span>
+            {lastKeywords.map((k) => (
+              <span
+                key={k.term}
+                title={`${k.type} · 偏${k.intentHint}`}
+                className="rounded-full border border-hair bg-white px-2 py-0.5 text-[10.5px] text-ink2"
+              >
+                {k.term}
+              </span>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* 列表 */}

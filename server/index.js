@@ -28,6 +28,14 @@ import { renderArticle } from "./content-template.js";
 import { buildPlanSlots } from "./plan.js";
 import { routeIntent, describeIntent, fieldsFor, needsConfirm, selectAnswerHits, AGENT_PRESETS } from "./agent-router.js";
 import {
+  keywordPrompt,
+  questionPrompt,
+  parseJsonLoose,
+  auditKeywords,
+  auditPrompts,
+  isLocalService,
+} from "./prompt-gen.js";
+import {
   normalizeAnswerQuery,
   buildAnswerWhere,
   parseCitations,
@@ -1600,7 +1608,11 @@ app.post(
   })
 );
 
-/** AI 生成提问：读知识库资料 + 品牌档案，出真实用户会问的问题（不是模板套壳） */
+/**
+ * AI 生成提问（两段式）：
+ * ① 先从品牌资料里选关键词 → ② 再基于关键词造问题 → ③ 确定性质检，不合格剔除并重试一次
+ * 关键词与质检结果一并返回，便于人工复核「问题是不是问在点上」。
+ */
 app.post(
   "/api/prompts/agent",
   requireAuth,
@@ -1619,98 +1631,133 @@ app.post(
         return res.status(400).json({ error: "既没有知识库文档也没有事实卡，先补资料再生成提问" });
       }
 
-      const factLines = facts.map((f) => `- ${f.attr}：${f.value}`).join("\n");
+      const competitors = db.prepare("SELECT * FROM competitors WHERE brand_id=?").all(brand.id);
+      const localService = isLocalService(brand, facts);
       const corpus = docs
         .map((d) => `### ${d.name}\n${d.text.slice(0, 2500)}`)
         .join("\n\n")
         .slice(0, 10000);
 
-      const prompt = `你是 GEO（生成式引擎优化）提问设计助手。请根据下列品牌资料，生成“真实用户会在 AI 里问的问题”。
+      /* ① 选关键词 */
+      const kwOut = await runAgent({
+        brandId: brand.id,
+        prompt: keywordPrompt({ brand, facts, corpus, competitors }),
+        timeoutMs: 120000,
+        system: "你是 GEO 关键词分析助手。只输出 JSON，不要解释，不要 markdown 代码块。",
+      });
+      if (!kwOut.ok) return res.status(422).json({ error: kwOut.error || "关键词生成失败" });
 
-【品牌】${brand.name}${brand.city ? `（${brand.city}）` : ""}
-【行业】${brand.industry || "未注明"}
-【一句话介绍】${brand.intro || "未注明"}
-${factLines ? `\n【已知事实口径】\n${factLines}\n` : ""}
-${corpus ? `【资料原文】\n${corpus}\n` : ""}
+      const kwJson = parseJsonLoose(kwOut.text);
+      const kwAudit = auditKeywords(kwJson?.keywords, { brandName: brand.name });
+      if (!kwAudit.accepted.length) {
+        return res.status(422).json({
+          error: "模型没有产出可用的关键词",
+          raw: String(kwOut.text || "").slice(0, 300),
+        });
+      }
 
-要求：
-1. 写成真人提问的语气：口语、简短（15–35 字），不要写成关键词或长句定义。
-2. 只问用户真正会关心的事：怎么选、多少钱、有没有坑、靠不靠谱、能不能覆盖到我这里、售后怎么样、和某某比怎么样。
-3. 禁止把品牌自己的宣传语、卖点、参数表当成问题。
-4. “本地”在不同行业含义不同：有实体门店的服务类，问“附近/到店/上门”；软件类产品，问“本地部署 / 私有化 / 数据不出内网”。按资料判断属于哪种。
-5. 意图只能取这五个值：认知 / 决策 / 口碑 / 比较 / 本地。
-6. 权重：决策与本地类给 3，口碑与比较给 2，认知给 1。
-7. 同一意图至少 3 条，总数 20–30 条，问题之间不得重复。
+      /* ② 基于关键词造问题 */
+      const perKeyword = Math.min(3, Math.max(1, Number(req.body?.perKeyword) || 2));
+      const basePrompt = questionPrompt({ brand, keywords: kwAudit.accepted, perKeyword, local: localService });
+      const existing = db
+        .prepare("SELECT text FROM prompts WHERE brand_id=?")
+        .all(brand.id)
+        .map((r) => r.text);
 
-输出格式：只输出 JSON 数组，不要 markdown 代码块，不要解释。
-[{"text":"南京装修公司哪家口碑比较好？","intent":"决策","weight":3}]`;
+      let qOut = await runAgent({
+        brandId: brand.id,
+        prompt: basePrompt,
+        timeoutMs: 180000,
+        system: "你是 GEO 提问设计助手。只输出 JSON 数组，不要解释，不要 markdown 代码块。",
+      });
+      if (!qOut.ok) return res.status(422).json({ error: qOut.error || "提问生成失败" });
 
-      const out = await runAgent({ brandId: brand.id, prompt, timeoutMs: 180000 });
-      if (!out.ok) return res.status(422).json({ error: out.error || "AI 生成失败" });
+      let items = parseJsonLoose(qOut.text);
+      let audit = auditPrompts(items, {
+        brandName: brand.name,
+        localService,
+        existing,
+        limit: 40,
+      });
 
-      const raw = String(out.text || "")
-        .trim()
-        .replace(/^```(?:json)?\s*/i, "")
-        .replace(/\s*```$/, "")
-        .trim();
-
-      let items = null;
-      try {
-        items = JSON.parse(raw);
-      } catch {
-        const m = raw.match(/\[[\s\S]*\]/);
-        if (m) {
-          try {
-            items = JSON.parse(m[0]);
-          } catch {
-            items = null;
-          }
+      /* ③ 通过率过低时，带着拒绝原因重试一次 */
+      const retried = audit.stats.accepted < Math.min(16, Math.round((audit.stats.total || 0) * 0.6));
+      if (retried && audit.rejected.length) {
+        const retryPrompt = `${basePrompt}\n\n上一轮以下问题不合格，请避免同类问题：\n${audit.rejected
+          .slice(0, 8)
+          .map((r) => `- ${r.text || "（空）"}（${r.reason}）`)
+          .join("\n")}`;
+        const qOut2 = await runAgent({
+          brandId: brand.id,
+          prompt: retryPrompt,
+          timeoutMs: 180000,
+          system: "你是 GEO 提问设计助手。只输出 JSON 数组，不要解释，不要 markdown 代码块。",
+        });
+        if (qOut2.ok) {
+          const items2 = parseJsonLoose(qOut2.text);
+          const audit2 = auditPrompts(items2, {
+            brandName: brand.name,
+            localService,
+            existing: [...existing, ...audit.accepted.map((x) => x.text)],
+            limit: 40 - audit.accepted.length,
+          });
+          audit = {
+            accepted: [...audit.accepted, ...audit2.accepted],
+            rejected: [...audit.rejected, ...audit2.rejected],
+            stats: {
+              ...audit.stats,
+              accepted: audit.accepted.length + audit2.accepted.length,
+              rejected: audit.rejected.length + audit2.rejected.length,
+              total: (audit.stats.total || 0) + (audit2.stats.total || 0),
+            },
+          };
         }
       }
-      if (!Array.isArray(items)) {
-        return res.status(422).json({ error: "模型没有返回合法 JSON，请重试", raw: raw.slice(0, 300) });
+
+      if (!audit.accepted.length) {
+        return res.status(422).json({
+          error: "生成的问题全部未通过质检",
+          keywords: kwAudit.accepted,
+          rejected: audit.rejected.slice(0, 10),
+        });
       }
 
-      const ALLOWED = new Set(["认知", "决策", "口碑", "比较", "本地"]);
-      const existing = new Set(
-        db.prepare("SELECT text FROM prompts WHERE brand_id=?").all(brand.id).map((r) => String(r.text).replace(/[\s\p{P}]/gu, ""))
-      );
-
+      /* ④ 落库（replace=true 时清空该品牌旧提问与旧探测） */
+      const replace = Boolean(req.body?.replace);
       const t = now();
-      let added = 0;
-      let skipped = 0;
-      const preview = [];
-
-      for (const it of items.slice(0, 40)) {
-        const text = String(it?.text || "").trim().slice(0, 120);
-        if (text.length < 6) {
-          skipped++;
-          continue;
+      db.exec("BEGIN");
+      try {
+        if (replace) {
+          db.prepare("DELETE FROM probe_results WHERE brand_id=?").run(brand.id);
+          db.prepare("DELETE FROM probe_runs WHERE brand_id=?").run(brand.id);
+          db.prepare("DELETE FROM prompts WHERE brand_id=?").run(brand.id);
         }
-        const key = text.replace(/[\s\p{P}]/gu, "");
-        if (existing.has(key)) {
-          skipped++;
-          continue;
-        }
-        const intent = ALLOWED.has(String(it?.intent)) ? String(it.intent) : "决策";
-        const weight = Math.min(3, Math.max(1, Number(it?.weight) || (intent === "认知" ? 1 : 3)));
-
-        db.prepare("INSERT INTO prompts (id, brand_id, text, intent, weight, created_at) VALUES (?,?,?,?,?,?)").run(
-          id(), brand.id, text, intent, weight, t
+        const ins = db.prepare(
+          "INSERT INTO prompts (id, brand_id, text, intent, weight, created_at) VALUES (?,?,?,?,?,?)"
         );
-        existing.add(key);
-        added++;
-        preview.push({ text, intent, weight });
+        for (const p of audit.accepted) ins.run(id(), brand.id, p.text, p.intent, p.weight, t);
+        db.exec("COMMIT");
+      } catch (e) {
+        db.exec("ROLLBACK");
+        throw e;
       }
+
+      const intentCount = {};
+      for (const p of audit.accepted) intentCount[p.intent] = (intentCount[p.intent] || 0) + 1;
 
       res.json({
         ok: true,
-        added,
-        skipped,
-        total: items.length,
-        preview: preview.slice(0, 10),
+        added: audit.accepted.length,
+        replaced: replace,
+        keywords: kwAudit.accepted,
+        keywordRejected: kwAudit.rejected.slice(0, 5),
+        stats: { ...audit.stats, intents: intentCount },
+        rejected: audit.rejected.slice(0, 10),
+        retried,
+        localService,
         fromDocs: docs.length,
         fromFacts: facts.length,
+        preview: audit.accepted.slice(0, 10),
       });
     } catch (e) {
       console.error("[prompts/agent]", e);

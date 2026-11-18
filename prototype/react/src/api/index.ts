@@ -546,19 +546,34 @@ export const updatePrompt = (promptId: string, input: { text?: string; intent?: 
 export const deletePromptsBatch = (brandId: string, ids: string[]) =>
   api<{ ok: true; deleted: number }>("/prompts/batch-delete", { method: "POST", body: { brandId, ids } });
 
+export type AgentPromptKeyword = { term: string; type: string; intentHint: string; why: string };
+
 export type AgentPromptsResult = {
   ok: true;
   added: number;
-  skipped: number;
-  total: number;
-  preview: { text: string; intent: string; weight: number }[];
+  replaced: boolean;
+  keywords: AgentPromptKeyword[];
+  keywordRejected: { term: string; reason: string }[];
+  stats: {
+    total: number;
+    accepted: number;
+    rejected: number;
+    brandHits: number;
+    brandRatio: number;
+    intents: Record<string, number>;
+    intentCoverage: number;
+  };
+  rejected: { text: string; reason: string }[];
+  retried: boolean;
+  localService: boolean;
   fromDocs: number;
   fromFacts: number;
+  preview: { text: string; intent: string; weight: number; keyword?: string; constraint?: string }[];
 };
 
-/** AI 生成提问：读知识库 + 事实卡，出贴合行业的问题（约 20–40s） */
-export const agentPrompts = (brandId: string) =>
-  api<AgentPromptsResult>("/prompts/agent", { method: "POST", body: { brandId } });
+/** AI 生成提问：先选关键词 → 再造问题 → 质检（约 40–90s） */
+export const agentPrompts = (brandId: string, opts: { replace?: boolean; perKeyword?: number } = {}) =>
+  api<AgentPromptsResult>("/prompts/agent", { method: "POST", body: { brandId, ...opts } });
 
 export const generatePrompts = (brandId: string, count = 40) =>
   api<{ added: number; total: number }>("/prompts/generate", { method: "POST", body: { brandId, count } });
