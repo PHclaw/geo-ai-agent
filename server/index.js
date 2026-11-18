@@ -4035,7 +4035,7 @@ app.post(
   "/api/agent/act",
   requireAuth,
   requireLevel("editor"),
-  wrap((req, res) => {
+  wrap(async (req, res) => {
     const b = req.body || {};
     const brand = ownedBrand(req, b.brandId);
     if (!brand) return res.status(404).json({ error: "品牌不存在" });
@@ -4147,8 +4147,18 @@ app.post(
         ? `已解析：${p.name} / ${p.city || "城市待填"} / ${p.industry || "行业待填"}，去向导确认后创建。`
         : "没解析到品牌信息。可以在下面补齐名称、城市与行业，或点「去建档向导」。";
       actions.push({ label: "去建档向导", to: "/wizard" });
+    } else if (r.intent === "greet") {
+      reply = [
+        "你好，我是这个工作台的入口。可以直接说要做的事，比如：",
+        "· 给 AgentFlow 生成一篇比较类文章",
+        "· 按 4 条养号、3:1 穿插生成 4 周排期",
+        "· 8000 元预算，投 AI 行业媒体",
+        "· 看一下现在的 AI 可见度和缺口",
+        "也可以问企业资料里的问题，我会检索并标来源；资料里没有的通用问题，我会调用智能体回答，并标注「未引用企业资料」。",
+      ].join("\n");
+      card = { type: "presets", presets: AGENT_PRESETS };
     } else {
-      // 非任务输入：先在企业资料里检索，按资料回答；没命中就说明没有，不编
+      // 非任务输入：先在企业资料里检索；命中就引用，没命中交给智能体回答（明确标注非企业资料）
       let hits = [];
       try {
         const raw = kbSearch.buildContext(brand.id, text, 8).hits || [];
@@ -4156,6 +4166,7 @@ app.post(
       } catch {
         hits = [];
       }
+
       if (hits.length) {
         card = {
           type: "answer",
@@ -4166,8 +4177,30 @@ app.post(
         };
         reply = `在企业资料里找到 ${hits.length} 段相关内容：`;
       } else {
-        card = { type: "answer", hits: [] };
-        reply = "企业知识库里没有检索到相关资料。可以先把文档传到「文档与检索」，或直接点下面的预设指令。";
+        const st = agentStatus();
+        if (st.available) {
+          const out = await runAgent({
+            brandId: brand.id,
+            prompt: `用户提问：${text}\n\n请用中文简洁回答，控制在 200 字内。涉及企业事实（价格、门店、资质、案例、客户）而资料里没有时，直接说没有相关资料，不要编造。`,
+            timeoutMs: 45000,
+            system:
+              "你是 GEO 工作台的问答助手。只输出最终回答，不要输出思考过程、不要描述你要做什么、不要提及读取文件或调用工具。回答简洁口语化，绝不编造企业事实。",
+          });
+          if (out.ok && String(out.text || "").trim()) {
+            const answer = String(out.text)
+              .replace(/^(?:I'll|I will|Let me|I am going to)[^\n]*\n+/i, "")
+              .replace(/^(?:I'll|I will|Let me)[^\n]*$/i, "")
+              .trim();
+            reply = "企业资料里没有相关内容，以下是通用回答（未引用企业资料，企业事实请以知识库为准）：";
+            card = { type: "answer", hits: [], text: answer, generated: true };
+          } else {
+            reply = `智能体没有返回内容${out.error ? `（${out.error}）` : ""}。可以先把资料传到「文档与检索」，或点下面的预设指令。`;
+            card = { type: "answer", hits: [] };
+          }
+        } else {
+          reply = "企业知识库里没有检索到相关资料，本机智能体也不可用（未安装或未配置 pi）。可以先把文档传到「文档与检索」。";
+          card = { type: "answer", hits: [] };
+        }
       }
     }
 

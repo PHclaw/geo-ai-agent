@@ -38,6 +38,10 @@ export const AGENT_PRESETS = [
   },
 ];
 
+/** 寒暄与能力询问：不该走知识库检索，直接给引导 */
+const GREET_RE =
+  /^(?:你好|您好|hi|hello|嗨|在吗|早上好|晚上好|谢谢|感谢|你是谁|你能做什么|你会什么|你怎么用|怎么用|有什么用|能干什么|介绍一下你)[\s!！。~?？]*$/i;
+
 /** 顺序有意义：越具体的动作越先匹配 */
 const RULES = [
   { intent: "schedule", re: /(排期|排班|发布计划|发布节奏|养号|穿插)/ },
@@ -70,7 +74,11 @@ function pickNumber(text, re) {
 
 export function routeIntent(raw) {
   const text = String(raw || "").trim();
-  if (!text) return { intent: "chat", label: "自由问答", params: {}, provided: [], matched: "" };
+  if (!text) return { intent: "greet", label: "对话", params: {}, provided: [], matched: "" };
+
+  if (GREET_RE.test(text)) {
+    return { intent: "greet", label: "对话", params: { query: text }, provided: ["query"], matched: text };
+  }
 
   const rule = RULES.find((r) => r.re.test(text));
   if (!rule) {

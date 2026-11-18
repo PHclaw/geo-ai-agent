@@ -66,15 +66,21 @@ test("建档：解析名称、城市、行业，并给出可编辑字段", () =>
   assert.equal(fields.find((f) => f.key === "siteUrl").value, "");
 });
 
+test("寒暄与能力询问先走对话，不做知识库检索", () => {
+  for (const text of ["你好", "您好！", "你能做什么", "怎么用", "hello"]) {
+    assert.equal(routeIntent(text).intent, "greet", text);
+  }
+});
+
 test("非任务输入走自由问答，不再拦成预设", () => {
   const r = routeIntent("AgentFlow 支持哪些部署方式");
   assert.equal(r.intent, "chat");
   assert.equal(r.params.query, "AgentFlow 支持哪些部署方式");
 });
 
-test("空输入也不抛异常", () => {
-  assert.equal(routeIntent("").intent, "chat");
-  assert.equal(routeIntent(null).intent, "chat");
+test("空输入也不抛异常（按对话引导处理）", () => {
+  assert.equal(routeIntent("").intent, "greet");
+  assert.equal(routeIntent(null).intent, "greet");
 });
 
 test("五个预设指令与描述文案齐备", () => {

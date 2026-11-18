@@ -419,7 +419,12 @@ function CardView({ card }: { card: AgentCard }) {
   if (card.type === "answer") {
     return (
       <div className="mt-2 rounded-xl border border-hair bg-white p-3">
-        {card.hits.length ? (
+        {card.generated && card.text ? (
+          <>
+            <div className="whitespace-pre-wrap text-[11.5px] leading-relaxed text-ink2">{card.text}</div>
+            <div className="mt-1.5 text-[10px] text-[#a35f12]">通用回答 · 未引用企业资料</div>
+          </>
+        ) : card.hits.length ? (
           <ul className="flex flex-col gap-2.5">
             {card.hits.map((h, i) => (
               <li key={i} className="text-[11.5px] leading-relaxed text-ink2">
@@ -429,7 +434,7 @@ function CardView({ card }: { card: AgentCard }) {
             ))}
           </ul>
         ) : (
-          <div className="text-[11.5px] text-ink3">没有命中企业资料，未生成任何内容。</div>
+          <div className="text-[11.5px] text-ink3">没有命中企业资料，也未生成内容。</div>
         )}
       </div>
     );

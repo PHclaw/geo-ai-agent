@@ -1198,7 +1198,7 @@ export type AgentCard =
     }
   | { type: "profile"; params: { name?: string; city?: string; industry?: string } }
   | { type: "presets"; presets: AgentPreset[] }
-  | { type: "answer"; hits: { text: string; docName: string }[] }
+  | { type: "answer"; hits: { text: string; docName: string }[]; text?: string; generated?: boolean }
   | { type: "confirm" };
 
 export type AgentActResult = {
