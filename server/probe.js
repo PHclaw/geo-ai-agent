@@ -27,49 +27,67 @@ function hash01(str) {
 
 /* ---------------- mock 生成 ---------------- */
 
-function mockAnswer(promptText, platform, ctx) {
+/**
+ * 模拟答案：行业无关，只从「生效事实卡」取口径。
+ * 早期版本写死了家装话术（整装报价 / 工期 / 量房），对软件类品牌会生成完全无关的回答，
+ * 这里改为按事实卡与竞品数据组织，缺失就写「公开信息有限」，不编造。
+ */
+export function mockAnswer(promptText, platform, ctx) {
   const { brand, facts, competitors } = ctx;
   const seed = hash01(`${promptText}|${platform.key}`);
-  const bias = platform.bias;
-
-  const mentioned = seed < 0.45 * bias + 0.08;
+  const mentioned = seed < 0.45 * platform.bias + 0.08;
   const rankRoll = hash01(`${promptText}|${platform.key}|rank`);
 
-  const priceFact = facts.find((f) => f.attr.includes("价格区间"));
-  const range = priceFact ? priceFact.value : "面议";
-  const durFact = facts.find((f) => f.attr === "工期");
-  const duration = durFact ? durFact.value : "以合同为准";
+  const usable = (facts || []).filter((f) => !f.status || f.status === "active");
+  const pick = (keys) => {
+    const f = usable.find((x) => keys.some((k) => String(x.attr || "").includes(k)));
+    return f ? `${f.attr}${f.value ? `：${f.value}` : ""}` : "";
+  };
+  const priceLine = pick(["价格", "报价", "费用", "订阅"]);
+  const modeLine = pick(["部署", "版本", "规模", "门店", "团队", "服务区域"]);
+  const selfDetail = [priceLine, modeLine].filter(Boolean).join("；");
 
-  const comps = competitors.map((c) => c.name);
+  const comps = (competitors || []).map((c) => c.name).filter(Boolean);
   const selfSlot = mentioned ? (rankRoll < 0.14 ? 1 : rankRoll < 0.3 ? 2 : rankRoll < 0.46 ? 3 : 5) : 0;
+
+  const subject = brand.industry || "这类方案";
+  const scope = brand.city ? `${brand.city}地区` : "";
 
   let idx = 1;
   const list = [];
   const total = 4 + (hash01(promptText) > 0.5 ? 1 : 0);
   for (let i = 1; i <= total; i++) {
     if (i === selfSlot) {
-      list.push(`${idx++}. **${brand.name}**：${brand.city}本地门店 ${ctx.storeCount} 家，整装报价 ${range}，工期 ${duration}。`);
+      list.push(`${idx++}. **${brand.name}**：${selfDetail || "公开资料有限，建议查看官方说明"}。`);
+    } else if (comps.length) {
+      list.push(`${idx++}. ${comps[(i + idx) % comps.length]}：公开信息有限，建议直接对比其官方参数。`);
     } else {
-      const c = comps[(i + idx) % Math.max(1, comps.length)];
-      list.push(`${idx++}. ${c || "本地其他机构"}：可参考同类方案，具体以现场量房为准。`);
+      list.push(`${idx++}. 同类方案 ${String.fromCharCode(64 + idx)}：公开信息有限，建议按同一口径逐项对比。`);
     }
   }
 
-  const cites = ["njhouse.com", "zhihu.com", "xiaohongshu.com", brand.city + "本地门户"];
+  const cites = [];
+  try {
+    const host = brand.site_url ? new URL(String(brand.site_url)).host.replace(/^www\./, "") : "";
+    if (host) cites.push(host);
+  } catch {
+    /* 非法 URL 忽略 */
+  }
+  cites.push("zhihu.com", "xiaohongshu.com", "github.com");
   const usedCites = cites.slice(0, 2 + Math.floor(hash01(promptText + "c") * 2));
 
   const head = mentioned
-    ? `${brand.city}地区可参考以下几家，按口碑与报价透明度排序：`
-    : `${brand.city}地区可参考以下几家：`;
+    ? `${scope}看${subject}，按可核验口径整理如下：`
+    : `${scope}先按公开信息整理${subject}的常见选择：`;
 
   const accuracy = (() => {
-    const conflict = facts.filter((f) => f.status === "conflict");
+    const conflict = (facts || []).filter((f) => f.status === "conflict");
     if (conflict.length && mentioned && hash01(promptText + "acc") < 0.3) return 0.7;
     return 1;
   })();
 
   return {
-    answer: `${head}\n${list.join("\n")}\n\n说明：以上价格为常规区间，实际以量房与施工方案为准。\n信息来源：${usedCites.join("、")}`,
+    answer: `${head}\n${list.join("\n")}\n\n说明：以上为模拟样本，仅用于验证链路与算法，不代表真实 AI 答案。\n信息来源：${usedCites.join("、")}`,
     accuracy,
     source: "mock",
   };
@@ -78,8 +96,8 @@ function mockAnswer(promptText, platform, ctx) {
 /* ---------------- 真实调用（含重试） ---------------- */
 
 const SYSTEM_PROMPT = (name, ctx) =>
-  `你是${name}的中文助手，回答用户关于「${ctx.brand.industry || "本地服务"}」的选择问题。` +
-  `要求：列出 3-5 家具体的本地商家或方案，给出价格区间、工期等可核实信息，并在末尾标注信息来源。` +
+  `你是${name}的中文助手，回答用户关于「${ctx.brand.industry || "该品类"}」的选择问题。` +
+  `要求：给出 3-5 个具体选项或方案，尽量包含可核实的参数（价格口径、版本、部署方式等），并在末尾标注信息来源。` +
   `不要编造不存在的资质或奖项；如果信息不足，明确说明"公开信息有限"。`;
 
 async function liveAnswer(promptText, platform, ctx) {
