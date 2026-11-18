@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Badge, Card, CardHead, Kpi, Note, cn, td, trHover } from "../components/ui";
 import {
   checkLinks,
@@ -37,6 +38,8 @@ const ghostCls =
 export default function Links() {
   const { brandId, me } = useSession();
   const canWrite = me?.permissions?.write !== false;
+  const [params, setParams] = useSearchParams();
+  const hostFilter = params.get("host") || "";
   const [kind, setKind] = useState("");
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
@@ -125,7 +128,9 @@ export default function Links() {
   if (error && !data) return <Note tone="warn" title="读取失败：">{error}</Note>;
 
   const s = data?.summary;
-  const items = data?.items || [];
+  const items = (data?.items || []).filter(
+    (l) => !hostFilter || String(l.host || "").toLowerCase().includes(hostFilter.toLowerCase())
+  );
 
   return (
     <div className="enter flex flex-col gap-3.5">
@@ -134,6 +139,17 @@ export default function Links() {
         <b className="mx-1">存活巡检是真实 HTTP 请求</b>，不需要 Key；收录状态需搜索 API 或人工回填，未检测一律显示「—」；
         被引用次数只统计真实探测 / C 端取证 / 搜索命中，模拟样本单列，不计入效果。
       </Note>
+
+      {hostFilter && (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-accent/30 bg-[#f7f9ff] px-3 py-2 text-[11.5px] text-ink2">
+          正在按引用域名筛选：
+          <span className="font-medium text-accent">{hostFilter}</span>
+          <span className="text-ink3">（来自采集原文的引用来源）</span>
+          <button onClick={() => setParams({})} className={cn(ghostCls, "ml-auto h-8")}>
+            清除筛选
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <Kpi label="台账链接" value={s?.total ?? "—"} unit="条" sub={`${Object.keys(s?.byKind || {}).length} 种类型`} />

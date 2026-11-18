@@ -3,7 +3,7 @@ import { Badge, Card, CardHead, Note } from "../components/ui";
 
 const SITE_MAP = [
   { group: "Agent", items: [["Agent 工作台", "/agent"]] },
-  { group: "① 诊断", items: [["AI 全景诊断", "/diagnosis"], ["提问矩阵", "/prompts"], ["C 端取证", "/evidence"]] },
+  { group: "① 诊断", items: [["AI 全景诊断", "/diagnosis"], ["采集原文", "/answers"], ["提问矩阵", "/prompts"], ["C 端取证", "/evidence"]] },
   { group: "② 企业资产", items: [["知识库", "/knowledge"], ["文档与检索", "/kb"], ["产品库", "/products"], ["官网建站", "/site"]] },
   { group: "③ 内容", items: [["内容创作", "/content"], ["数字人与视频", "/avatar"]] },
   { group: "④ 分发", items: [["媒体分发", "/media"], ["发布排期", "/plan"], ["链接资产", "/links"]] },
@@ -17,7 +17,7 @@ export default function NotFound() {
       <Card>
         <CardHead
           title="页面不存在"
-          sub="React 版工作台已覆盖 22 条路由，请从下方或左侧导航进入"
+          sub="React 版工作台已覆盖 23 条路由，请从下方或左侧导航进入"
           right={<Badge tone="warn">404</Badge>}
         />
         <div className="mt-3.5 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">

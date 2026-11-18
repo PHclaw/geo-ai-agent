@@ -349,6 +349,12 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_link_assets_brand ON link_assets(brand_id, kind);
   CREATE INDEX IF NOT EXISTS idx_link_checks_brand ON link_checks(brand_id, checked_at);
 
+  /* 采集结果浏览：按轮次 / 品牌时间 / 平台筛选走索引 */
+  CREATE INDEX IF NOT EXISTS idx_probe_results_run ON probe_results(run_id);
+  CREATE INDEX IF NOT EXISTS idx_probe_results_brand_created ON probe_results(brand_id, created_at);
+  CREATE INDEX IF NOT EXISTS idx_probe_results_brand_platform ON probe_results(brand_id, platform);
+  CREATE INDEX IF NOT EXISTS idx_prompts_brand ON prompts(brand_id);
+
   /* ---------------- 数字人配置 / 服务商客户（替换前端写死数据） ---------------- */
 
   CREATE TABLE IF NOT EXISTS avatar_config (

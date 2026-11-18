@@ -13,6 +13,7 @@ const NAV: NavGroup[] = [
     label: "① 诊断",
     items: [
       { to: "/diagnosis", label: "AI 全景诊断", icon: "radar" },
+      { to: "/answers", label: "采集原文", icon: "layers" },
       { to: "/prompts", label: "提问矩阵", icon: "list" },
       { to: "/evidence", label: "C 端取证", icon: "camera" },
     ],
@@ -55,6 +56,7 @@ const TITLES: Record<string, { title: string; crumb: string }> = {
   "/": { title: "工作台", crumb: "和序装饰 · 南京 · 4 家门店" },
   "/agent": { title: "Agent 工作台", crumb: "和序装饰 › Agent › 一句话触发" },
   "/diagnosis": { title: "AI 全景诊断", crumb: "和序装饰 › 诊断 › 2026-10-27" },
+  "/answers": { title: "采集原文", crumb: "和序装饰 › 诊断 › 答案与引用来源" },
   "/evidence": { title: "C 端取证", crumb: "和序装饰 › 诊断 › A 级证据采集" },
   "/prompts": { title: "提问矩阵", crumb: "和序装饰 › 诊断 › 取证题库" },
   "/knowledge": { title: "知识库", crumb: "和序装饰 › 企业资产 › 知识库" },

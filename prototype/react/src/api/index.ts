@@ -1157,6 +1157,91 @@ export const publishPlan = (brandId: string, id: string, url: string, note?: str
     body: { brandId, url, note },
   });
 
+/* ---------------- 采集结果浏览（M3） ---------------- */
+
+export type AnswerItem = {
+  id: string;
+  runId: string;
+  platform: string;
+  promptId: string;
+  promptText: string;
+  intent: string;
+  answer: string;
+  fullLength: number;
+  citations: string[];
+  citationCount: number;
+  cited: boolean;
+  mention: boolean;
+  accuracy: number;
+  position: number;
+  createdAt: string;
+};
+
+export type AnswerCitation = {
+  host: string;
+  inLedger: boolean;
+  url: string;
+  status: string;
+  httpStatus: number | null;
+  checkedAt: string;
+};
+
+export type AnswerDetail = Omit<AnswerItem, "citations"> & {
+  citations: AnswerCitation[];
+  mode: string;
+};
+
+export type AnswerQuery = {
+  page?: number;
+  size?: number;
+  platform?: string;
+  keyword?: string;
+  from?: string;
+  to?: string;
+  cited?: string;
+  runId?: string;
+};
+
+export type AnswersData = {
+  items: AnswerItem[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+  runId: string;
+  facets: { platforms: { platform: string; count: number }[] };
+  runs: { id: string; startedAt: string; total: number; mode: string; status: string }[];
+};
+
+const queryString = (brandId: string, q: Record<string, unknown>) => {
+  const p = new URLSearchParams({ brandId });
+  for (const [k, v] of Object.entries(q)) {
+    if (v === undefined || v === null || v === "") continue;
+    p.set(k, String(v));
+  }
+  return p.toString();
+};
+
+export const fetchAnswers = (brandId: string, q: AnswerQuery = {}) =>
+  api<AnswersData>(`/answers?${queryString(brandId, q)}`);
+
+export const fetchAnswer = (brandId: string, id: string) =>
+  api<AnswerDetail>(`/answers/${id}?brandId=${brandId}`);
+
+export async function downloadAnswersCsv(brandId: string, q: AnswerQuery = {}) {
+  const res = await fetch(`/api/answers/export.csv?${queryString(brandId, q)}`, {
+    headers: { Authorization: `Bearer ${getToken() || ""}` },
+  });
+  if (!res.ok) throw new Error(`导出失败（${res.status}）`);
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `geo-answers-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 /* ---------------- Agent 工作台 ---------------- */
 
 export type AgentPreset = { key: string; label: string; hint: string; example: string };

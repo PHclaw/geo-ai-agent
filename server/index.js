@@ -27,6 +27,15 @@ import { parseCsvRecords, computeExposure } from "./seo-import.js";
 import { renderArticle } from "./content-template.js";
 import { buildPlanSlots } from "./plan.js";
 import { routeIntent, describeIntent, fieldsFor, needsConfirm, selectAnswerHits, AGENT_PRESETS } from "./agent-router.js";
+import {
+  normalizeAnswerQuery,
+  buildAnswerWhere,
+  parseCitations,
+  toAnswerRow,
+  toAnswerCsv,
+  ANSWER_CSV_LIMIT,
+  ANSWER_MAX_PAGE_SIZE,
+} from "./answers-query.js";
 
 // 先加载 server/.env，再初始化任何依赖配置的模块
 loadEnv();
@@ -848,6 +857,128 @@ app.get(
         prompt: promptMap.get(r.prompt_id) ? mapPrompt(promptMap.get(r.prompt_id)) : null,
         platforms: rows.filter((x) => x.prompt_id === r.prompt_id).map((x) => x.platform),
       })),
+    });
+  })
+);
+
+/* ---------------- 采集结果浏览（M3）：原文、筛选、引用、导出 ---------------- */
+
+const latestProbeRunId = (brandId) =>
+  db.prepare("SELECT id FROM probe_runs WHERE brand_id=? ORDER BY started_at DESC LIMIT 1").get(brandId)?.id || "";
+
+/** 导出当前筛选结果为 CSV；必须注册在 /api/answers/:id 之前 */
+app.get(
+  "/api/answers/export.csv",
+  requireAuth,
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.query.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    const q = normalizeAnswerQuery({ ...req.query, page: 1, size: ANSWER_MAX_PAGE_SIZE });
+    const { sql, params } = buildAnswerWhere(q, brand.id, latestProbeRunId(brand.id));
+    const rows = db
+      .prepare(
+        `SELECT r.*, p.text AS prompt_text, p.intent AS intent
+         FROM probe_results r LEFT JOIN prompts p ON p.id = r.prompt_id
+         WHERE ${sql}
+         ORDER BY r.created_at DESC, r.platform ASC
+         LIMIT ?`
+      )
+      .all(...params, ANSWER_CSV_LIMIT);
+    const csv = toAnswerCsv(
+      rows.map((x) => ({
+        createdAt: x.created_at,
+        platform: x.platform,
+        promptText: x.prompt_text || "",
+        intent: x.intent || "",
+        mention: x.mention,
+        citations: x.citations,
+        answer: x.answer,
+      }))
+    );
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", 'attachment; filename="geo-answers.csv"');
+    res.send(`\uFEFF${csv}`);
+  })
+);
+
+/** 答案列表：分页 + 平台 / 关键词 / 日期 / 是否被引用 */
+app.get(
+  "/api/answers",
+  requireAuth,
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.query.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    const q = normalizeAnswerQuery(req.query);
+    const { sql, params, runId } = buildAnswerWhere(q, brand.id, latestProbeRunId(brand.id));
+    const base = `FROM probe_results r LEFT JOIN prompts p ON p.id = r.prompt_id WHERE ${sql}`;
+
+    const total = db.prepare(`SELECT COUNT(*) c ${base}`).get(...params).c;
+    const rows = db
+      .prepare(
+        `SELECT r.*, p.text AS prompt_text, p.intent AS intent ${base}
+         ORDER BY r.created_at DESC, r.platform ASC, r.position ASC
+         LIMIT ? OFFSET ?`
+      )
+      .all(...params, q.size, (q.page - 1) * q.size);
+
+    const scopeRun = q.runId === "all" ? "" : q.runId || latestProbeRunId(brand.id);
+    const platformRows = scopeRun
+      ? db
+          .prepare("SELECT platform, COUNT(*) c FROM probe_results WHERE brand_id=? AND run_id=? GROUP BY platform ORDER BY platform")
+          .all(brand.id, scopeRun)
+      : db.prepare("SELECT platform, COUNT(*) c FROM probe_results WHERE brand_id=? GROUP BY platform ORDER BY platform").all(brand.id);
+
+    res.json({
+      items: rows.map((r) => toAnswerRow(r)),
+      total,
+      page: q.page,
+      size: q.size,
+      pages: Math.max(1, Math.ceil(total / q.size)),
+      runId: scopeRun,
+      facets: { platforms: platformRows.map((x) => ({ platform: x.platform, count: x.c })) },
+      runs: db
+        .prepare("SELECT id, started_at, total, mode, status FROM probe_runs WHERE brand_id=? ORDER BY started_at DESC LIMIT 10")
+        .all(brand.id)
+        .map((r) => ({ id: r.id, startedAt: r.started_at, total: r.total, mode: r.mode, status: r.status })),
+    });
+  })
+);
+
+/** 答案详情：全文 + 每条引用在台账里的登记与巡检状态 */
+app.get(
+  "/api/answers/:id",
+  requireAuth,
+  wrap((req, res) => {
+    const r = db
+      .prepare(
+        `SELECT r.*, p.text AS prompt_text, p.intent AS intent
+         FROM probe_results r LEFT JOIN prompts p ON p.id = r.prompt_id WHERE r.id = ?`
+      )
+      .get(req.params.id);
+    if (!r) return res.status(404).json({ error: "采集记录不存在" });
+    const brand = ownedBrand(req, r.brand_id);
+    if (!brand) return res.status(403).json({ error: "无权访问该记录" });
+
+    const citations = parseCitations(r.citations).map((host) => {
+      const asset = db.prepare("SELECT * FROM link_assets WHERE brand_id=? AND host=?").get(brand.id, host);
+      const check = asset
+        ? db.prepare("SELECT * FROM link_checks WHERE link_id=? ORDER BY checked_at DESC LIMIT 1").get(asset.id)
+        : null;
+      return {
+        host,
+        inLedger: Boolean(asset),
+        url: asset?.url || "",
+        status: check ? (check.ok ? "active" : "broken") : asset ? "unknown" : "not-in-ledger",
+        httpStatus: check?.http_status ?? null,
+        checkedAt: check?.checked_at || "",
+      };
+    });
+
+    res.json({
+      ...toAnswerRow(r, 100000),
+      answer: String(r.answer || ""),
+      citations,
+      mode: db.prepare("SELECT mode FROM probe_runs WHERE id=?").get(r.run_id)?.mode || "mock",
     });
   })
 );
