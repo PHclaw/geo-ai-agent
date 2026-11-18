@@ -4005,6 +4005,55 @@ app.get(
   wrap((req, res) => res.json({ presets: AGENT_PRESETS }))
 );
 
+/** 工作台偏好：深度模式（问答优先交给本机 pi） */
+app.get(
+  "/api/agent/settings",
+  requireAuth,
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.query.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    const row = db.prepare("SELECT * FROM agent_settings WHERE brand_id=?").get(brand.id);
+    res.json({ deepMode: Boolean(row?.deep_mode), updatedAt: row?.updated_at || "" });
+  })
+);
+
+app.put(
+  "/api/agent/settings",
+  requireAuth,
+  requireLevel("editor"),
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.body?.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    const deep = req.body?.deepMode ? 1 : 0;
+    db.prepare(
+      `INSERT INTO agent_settings (brand_id, deep_mode, updated_at) VALUES (?,?,?)
+       ON CONFLICT(brand_id) DO UPDATE SET deep_mode=excluded.deep_mode, updated_at=excluded.updated_at`
+    ).run(brand.id, deep, now());
+    res.json({ ok: true, deepMode: Boolean(deep) });
+  })
+);
+
+/** 深度模式：把检索到的资料作为上下文交给 pi，由它组织回答 */
+async function answerWithAgent(brandId, text, hits = []) {
+  const context = hits
+    .map((h) => `【${h.docName || "企业资料"}】${String(h.text || "").slice(0, 400)}`)
+    .join("\n");
+  const out = await runAgent({
+    brandId,
+    prompt: `${
+      context ? `企业资料（可引用，引用时注明文件名）：\n${context}\n\n` : ""
+    }用户提问：${text}\n\n请用中文简洁回答，控制在 250 字内。涉及企业事实（价格、门店、资质、案例、客户）而资料里没有时，直接说没有相关资料，不要编造。`,
+    timeoutMs: 45000,
+    system:
+      "你是 GEO 工作台的问答助手。只输出最终回答，不要输出思考过程、不要描述你要做什么、不要提及读取文件或调用工具。回答简洁口语化，绝不编造企业事实。",
+  });
+  const answer = String(out.text || "")
+    .replace(/^(?:I'll|I will|Let me|I am going to)[^\n]*\n+/i, "")
+    .replace(/^(?:I'll|I will|Let me)[^\n]*$/i, "")
+    .trim();
+  return { ok: Boolean(out.ok && answer), answer, error: out.error || "" };
+}
+
 /** 最近执行记录：回答「这次执行到底跑了什么、成功没有、耗时多少」 */
 app.get(
   "/api/agent/tasks",
@@ -4044,10 +4093,12 @@ app.post(
 
     const taskId = id();
     const startedAt = Date.now();
+    const setting = db.prepare("SELECT deep_mode FROM agent_settings WHERE brand_id=?").get(brand.id);
+    const deep = b.deep === undefined ? Boolean(setting?.deep_mode) : Boolean(b.deep);
     db.prepare(
       `INSERT INTO agent_tasks (id, brand_id, text, intent, params, status, result_id, error, ms, created_at)
        VALUES (?,?,?,'pending',?,'running','','',0,?)`
-    ).run(taskId, brand.id, text, JSON.stringify(b.params || {}), now());
+    ).run(taskId, brand.id, text, JSON.stringify({ ...(b.params || {}), deep }), now());
 
     const r = routeIntent(text);
     const baseFields = fieldsFor(r.intent, r.params, r.provided);
@@ -4148,15 +4199,26 @@ app.post(
         : "没解析到品牌信息。可以在下面补齐名称、城市与行业，或点「去建档向导」。";
       actions.push({ label: "去建档向导", to: "/wizard" });
     } else if (r.intent === "greet") {
-      reply = [
-        "你好，我是这个工作台的入口。可以直接说要做的事，比如：",
-        "· 给 AgentFlow 生成一篇比较类文章",
-        "· 按 4 条养号、3:1 穿插生成 4 周排期",
-        "· 8000 元预算，投 AI 行业媒体",
-        "· 看一下现在的 AI 可见度和缺口",
-        "也可以问企业资料里的问题，我会检索并标来源；资料里没有的通用问题，我会调用智能体回答，并标注「未引用企业资料」。",
-      ].join("\n");
-      card = { type: "presets", presets: AGENT_PRESETS };
+      if (deep) {
+        const ans = await answerWithAgent(brand.id, text);
+        if (ans.ok) {
+          reply = "（深度模式）你好，我在。有什么可以帮你的？";
+          card = { type: "answer", hits: [], text: ans.answer, deep: true, generated: true };
+        } else {
+          reply = "深度模式调用智能体失败，已回到默认引导。";
+          card = { type: "presets", presets: AGENT_PRESETS };
+        }
+      } else {
+        reply = [
+          "你好，我是这个工作台的入口。可以直接说要做的事，比如：",
+          "· 给 AgentFlow 生成一篇比较类文章",
+          "· 按 4 条养号、3:1 穿插生成 4 周排期",
+          "· 8000 元预算，投 AI 行业媒体",
+          "· 看一下现在的 AI 可见度和缺口",
+          "也可以问企业资料里的问题，我会检索并标来源；资料里没有的通用问题，我会调用智能体回答，并标注「未引用企业资料」。",
+        ].join("\n");
+        card = { type: "presets", presets: AGENT_PRESETS };
+      }
     } else {
       // 非任务输入：先在企业资料里检索；命中就引用，没命中交给智能体回答（明确标注非企业资料）
       let hits = [];
@@ -4167,7 +4229,18 @@ app.post(
         hits = [];
       }
 
-      if (hits.length) {
+      if (deep) {
+        const ans = await answerWithAgent(brand.id, text, hits);
+        if (ans.ok) {
+          reply = hits.length
+            ? "（深度模式）已结合企业资料回答："
+            : "（深度模式）企业资料未命中，以下是通用回答：";
+          card = { type: "answer", hits: [], text: ans.answer, deep: true, generated: !hits.length };
+        } else {
+          reply = `深度模式未返回内容${ans.error ? `（${ans.error}）` : ""}。可以关闭深度模式再试，或先把资料传到「文档与检索」。`;
+          card = { type: "answer", hits: [] };
+        }
+      } else if (hits.length) {
         card = {
           type: "answer",
           hits: hits.map((h) => ({

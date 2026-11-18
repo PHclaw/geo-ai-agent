@@ -4,7 +4,9 @@ import { Badge, Card, CardHead, Note, cn, td } from "../components/ui";
 import {
   agentAct,
   fetchAgentPresets,
+  fetchAgentSettings,
   fetchAgentTasks,
+  saveAgentSettings,
   useApi,
   useSession,
   type AgentCard,
@@ -40,6 +42,7 @@ export default function Agent() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [deep, setDeep] = useState(false);
   const [presets, setPresets] = useState<AgentPreset[]>([]);
   const [msgs, setMsgs] = useState<Msg[]>([{ id: 0, role: "agent", text: WELCOME }]);
   const seq = useRef(1);
@@ -57,6 +60,22 @@ export default function Agent() {
   }, []);
 
   const tasksQ = useApi(brandId ? () => fetchAgentTasks(brandId, 8) : null, [brandId]);
+  const settingsQ = useApi(brandId ? () => fetchAgentSettings(brandId) : null, [brandId]);
+
+  useEffect(() => {
+    if (settingsQ.data) setDeep(Boolean(settingsQ.data.deepMode));
+  }, [settingsQ.data]);
+
+  async function toggleDeep(next: boolean) {
+    if (!brandId) return;
+    setDeep(next);
+    try {
+      await saveAgentSettings(brandId, next);
+    } catch (e) {
+      setDeep(!next);
+      setToast(e instanceof Error ? e.message : "保存失败");
+    }
+  }
 
   async function send(text?: string, params?: Record<string, unknown>, confirm?: boolean) {
     const t = String(text ?? input).trim();
@@ -67,7 +86,7 @@ export default function Agent() {
     }
     setBusy(true);
     try {
-      const r = await agentAct(brandId, t, params, confirm);
+      const r = await agentAct(brandId, t, params, confirm, deep);
       setPresets(r.presets || []);
       setMsgs((m) => [
         ...m,
@@ -102,8 +121,38 @@ export default function Agent() {
         <div className="border-b border-hair px-4 py-3">
           <CardHead
             title="Agent 工作台"
-            sub="一句话触发 · 参数可改 · 问答标来源 · 每次操作都可回溯"
-            right={<Badge tone={busy ? "warn" : "ok"}>{busy ? "执行中" : "就绪"}</Badge>}
+            sub={
+              deep
+                ? "深度模式已开启：问答先交给本机 pi（约 7–9 秒），任务类不受影响"
+                : "一句话触发 · 参数可改 · 问答标来源 · 每次操作都可回溯"
+            }
+            right={
+              <div className="flex items-center gap-3">
+                <Badge tone={busy ? "warn" : "ok"}>{busy ? "执行中" : "就绪"}</Badge>
+                <label className="flex items-center gap-2 text-[11px] text-ink2">
+                  <span>深度模式</span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={deep}
+                    aria-label="深度模式"
+                    onClick={() => void toggleDeep(!deep)}
+                    disabled={busy || !canWrite}
+                    className={cn(
+                      "relative h-5 w-9 rounded-full transition-colors disabled:opacity-40",
+                      deep ? "bg-accent" : "bg-[#d6d6dc]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-all",
+                        deep ? "left-[18px]" : "left-0.5"
+                      )}
+                    />
+                  </button>
+                </label>
+              </div>
+            }
           />
         </div>
 
@@ -419,10 +468,16 @@ function CardView({ card }: { card: AgentCard }) {
   if (card.type === "answer") {
     return (
       <div className="mt-2 rounded-xl border border-hair bg-white p-3">
-        {card.generated && card.text ? (
+        {card.text ? (
           <>
             <div className="whitespace-pre-wrap text-[11.5px] leading-relaxed text-ink2">{card.text}</div>
-            <div className="mt-1.5 text-[10px] text-[#a35f12]">通用回答 · 未引用企业资料</div>
+            <div className="mt-1.5 text-[10px] text-[#a35f12]">
+              {card.deep
+                ? card.generated
+                  ? "深度模式 · 通用回答，未引用企业资料"
+                  : "深度模式 · 已结合企业资料"
+                : "通用回答 · 未引用企业资料"}
+            </div>
           </>
         ) : card.hits.length ? (
           <ul className="flex flex-col gap-2.5">

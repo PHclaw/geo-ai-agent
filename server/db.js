@@ -444,6 +444,12 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_agent_tasks_brand ON agent_tasks(brand_id, created_at);
+
+  CREATE TABLE IF NOT EXISTS agent_settings (
+    brand_id TEXT PRIMARY KEY,
+    deep_mode INTEGER NOT NULL DEFAULT 0,
+    updated_at TEXT NOT NULL
+  );
 `);
 
 /* ---------------- 种子数据：首次启动写入一个可用的演示租户 ---------------- */

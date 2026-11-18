@@ -1198,7 +1198,7 @@ export type AgentCard =
     }
   | { type: "profile"; params: { name?: string; city?: string; industry?: string } }
   | { type: "presets"; presets: AgentPreset[] }
-  | { type: "answer"; hits: { text: string; docName: string }[]; text?: string; generated?: boolean }
+  | { type: "answer"; hits: { text: string; docName: string }[]; text?: string; generated?: boolean; deep?: boolean }
   | { type: "confirm" };
 
 export type AgentActResult = {
@@ -1217,8 +1217,24 @@ export const agentAct = (
   brandId: string,
   text: string,
   params?: Record<string, unknown>,
-  confirm?: boolean
-) => api<AgentActResult>("/agent/act", { method: "POST", body: { brandId, text, params, confirm } });
+  confirm?: boolean,
+  deep?: boolean
+) =>
+  api<AgentActResult>("/agent/act", {
+    method: "POST",
+    body: { brandId, text, params, confirm, deep },
+  });
+
+export type AgentSettings = { deepMode: boolean; updatedAt: string };
+
+export const fetchAgentSettings = (brandId: string) =>
+  api<AgentSettings>(`/agent/settings?brandId=${brandId}`);
+
+export const saveAgentSettings = (brandId: string, deepMode: boolean) =>
+  api<{ ok: true; deepMode: boolean }>("/agent/settings", {
+    method: "PUT",
+    body: { brandId, deepMode },
+  });
 
 export const fetchAgentPresets = () => api<{ presets: AgentPreset[] }>("/agent/presets");
 
