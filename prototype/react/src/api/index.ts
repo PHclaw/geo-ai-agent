@@ -1222,6 +1222,20 @@ export const agentAct = (
 
 export const fetchAgentPresets = () => api<{ presets: AgentPreset[] }>("/agent/presets");
 
+export type AgentTask = {
+  id: string;
+  text: string;
+  intent: string;
+  status: string;
+  resultId: string;
+  error: string;
+  ms: number;
+  createdAt: string;
+};
+
+export const fetchAgentTasks = (brandId: string, limit = 10) =>
+  api<AgentTask[]>(`/agent/tasks?brandId=${brandId}&limit=${limit}`);
+
 /* ---------------- hooks ---------------- */
 
 export function useApi<T>(fn: (() => Promise<T>) | null, deps: unknown[] = []) {

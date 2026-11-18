@@ -427,6 +427,23 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_publish_plans_brand ON publish_plans(brand_id, planned_at);
+
+  /* ---------------- Agent 工作台执行记录（M2 验收：每次执行可追溯） ---------------- */
+
+  CREATE TABLE IF NOT EXISTS agent_tasks (
+    id TEXT PRIMARY KEY,
+    brand_id TEXT NOT NULL,
+    text TEXT NOT NULL,
+    intent TEXT NOT NULL DEFAULT 'pending',
+    params TEXT DEFAULT '{}',
+    status TEXT NOT NULL DEFAULT 'running',
+    result_id TEXT DEFAULT '',
+    error TEXT DEFAULT '',
+    ms INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  );
+
+  CREATE INDEX IF NOT EXISTS idx_agent_tasks_brand ON agent_tasks(brand_id, created_at);
 `);
 
 /* ---------------- 种子数据：首次启动写入一个可用的演示租户 ---------------- */

@@ -4005,6 +4005,32 @@ app.get(
   wrap((req, res) => res.json({ presets: AGENT_PRESETS }))
 );
 
+/** 最近执行记录：回答「这次执行到底跑了什么、成功没有、耗时多少」 */
+app.get(
+  "/api/agent/tasks",
+  requireAuth,
+  wrap((req, res) => {
+    const brand = ownedBrand(req, req.query.brandId);
+    if (!brand) return res.status(404).json({ error: "品牌不存在" });
+    const limit = Math.min(50, Math.max(1, Number(req.query.limit) || 10));
+    const rows = db
+      .prepare("SELECT * FROM agent_tasks WHERE brand_id=? ORDER BY created_at DESC LIMIT ?")
+      .all(brand.id, limit);
+    res.json(
+      rows.map((t) => ({
+        id: t.id,
+        text: t.text,
+        intent: t.intent,
+        status: t.status,
+        resultId: t.result_id || "",
+        error: t.error || "",
+        ms: t.ms || 0,
+        createdAt: t.created_at,
+      }))
+    );
+  })
+);
+
 app.post(
   "/api/agent/act",
   requireAuth,
@@ -4015,6 +4041,13 @@ app.post(
     if (!brand) return res.status(404).json({ error: "品牌不存在" });
     const text = String(b.text || "").trim();
     if (!text) return res.status(400).json({ error: "请输入一句话指令" });
+
+    const taskId = id();
+    const startedAt = Date.now();
+    db.prepare(
+      `INSERT INTO agent_tasks (id, brand_id, text, intent, params, status, result_id, error, ms, created_at)
+       VALUES (?,?,?,'pending',?,'running','','',0,?)`
+    ).run(taskId, brand.id, text, JSON.stringify(b.params || {}), now());
 
     const r = routeIntent(text);
     const baseFields = fieldsFor(r.intent, r.params, r.provided);
@@ -4138,8 +4171,16 @@ app.post(
       }
     }
 
+    db.prepare("UPDATE agent_tasks SET intent=?, status='done', result_id=?, ms=? WHERE id=?").run(
+      r.intent,
+      card && card.type === "article" ? card.contentId : "",
+      Date.now() - startedAt,
+      taskId
+    );
+
     res.json({
       ok: true,
+      taskId,
       intent: r.intent,
       label: r.label,
       reply,

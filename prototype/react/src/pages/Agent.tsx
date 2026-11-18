@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Badge, CardHead, Note, cn, td } from "../components/ui";
+import { Badge, Card, CardHead, Note, cn, td } from "../components/ui";
 import {
   agentAct,
   fetchAgentPresets,
+  fetchAgentTasks,
+  useApi,
   useSession,
   type AgentCard,
   type AgentField,
@@ -37,6 +39,7 @@ export default function Agent() {
   const canWrite = me?.permissions?.write !== false;
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
   const [presets, setPresets] = useState<AgentPreset[]>([]);
   const [msgs, setMsgs] = useState<Msg[]>([{ id: 0, role: "agent", text: WELCOME }]);
   const seq = useRef(1);
@@ -52,6 +55,8 @@ export default function Agent() {
       .then((r) => setPresets(r.presets || []))
       .catch(() => setPresets([]));
   }, []);
+
+  const tasksQ = useApi(brandId ? () => fetchAgentTasks(brandId, 8) : null, [brandId]);
 
   async function send(text?: string, params?: Record<string, unknown>, confirm?: boolean) {
     const t = String(text ?? input).trim();
@@ -77,12 +82,12 @@ export default function Agent() {
         },
       ]);
     } catch (e) {
-      setMsgs((m) => [
-        ...m,
-        { id: seq.current++, role: "agent", text: e instanceof Error ? e.message : "执行失败" },
-      ]);
+      const msg = e instanceof Error ? e.message : "执行失败";
+      setToast(msg);
+      setMsgs((m) => [...m, { id: seq.current++, role: "agent", text: msg }]);
     } finally {
       setBusy(false);
+      void tasksQ.reload();
     }
   }
 
@@ -184,6 +189,63 @@ export default function Agent() {
           </div>
         </div>
       </div>
+
+      <Card flush>
+        <div className="px-4 pt-4 pb-2">
+          <CardHead
+            title="最近执行"
+            sub="每次指令都会落库：意图、状态、耗时与结果均可追溯"
+            right={
+              <button onClick={() => void tasksQ.reload()} className="text-[11px] text-accent hover:underline">
+                刷新
+              </button>
+            }
+          />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-[11.5px]">
+            <thead>
+              <tr className="border-b border-hair bg-[#fafafb] text-[10px] font-semibold tracking-[0.05em] text-ink3 uppercase">
+                <th className="px-3.5 py-2">时间</th>
+                <th className="px-3.5 py-2">指令</th>
+                <th className="px-3.5 py-2">意图</th>
+                <th className="px-3.5 py-2">状态</th>
+                <th className="px-3.5 py-2">耗时</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(tasksQ.data || []).map((t) => (
+                <tr key={t.id} className="border-b border-hair/60">
+                  <td className={cn(td, "tnum text-ink3")}>{t.createdAt.slice(5, 16).replace("T", " ")}</td>
+                  <td className={cn(td, "max-w-[280px] truncate")} title={t.text}>
+                    {t.text}
+                  </td>
+                  <td className={td}>{t.intent}</td>
+                  <td className={td}>
+                    <Badge tone={t.status === "done" ? "ok" : t.status === "failed" ? "warn" : "info"}>
+                      {t.status === "done" ? "成功" : t.status === "failed" ? "失败" : "执行中"}
+                    </Badge>
+                  </td>
+                  <td className={cn(td, "tnum")}>{t.ms}ms</td>
+                </tr>
+              ))}
+              {!tasksQ.data?.length && (
+                <tr>
+                  <td colSpan={5} className={cn(td, "py-6 text-center text-ink3")}>
+                    还没有执行记录
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {toast && (
+        <div className="pointer-events-none fixed bottom-8 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-[#1d1d1f] px-4 py-2.5 text-[12px] text-white shadow-lg">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
